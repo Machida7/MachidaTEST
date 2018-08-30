@@ -12,9 +12,9 @@ public class LBWindow extends JFrame {
 	 static JPanel cardPanel;
 	 static CardLayout layout;
 	 static Container contentPane;
-	 
+
 	 private static AddBookPanel addBookP;
-	 
+
 public static void setAddBookP(AddBookPanel addBookP) {
 		LBWindow.addBookP = addBookP;
 	}
@@ -34,11 +34,11 @@ public static AddBookPanel getAddBookP() {
 		cardPanel=new JPanel();
 		layout=new CardLayout();
 		cardPanel.setLayout(layout);
-		
+
 		addBookP=new AddBookPanel();
-		
+
 		cardPanel.add(new LoginPanel(), "LoginPanel");
-		cardPanel.add(new HomePanel(),"HomePanel");
+		
 		cardPanel.add(addBookP,"AddBookPanel");
 		cardPanel.add(new ReturnBookPanel(),"ReturnBookPanel");
 		cardPanel.add(new FindBookPanel(),"FindBookPanel");

@@ -1,5 +1,6 @@
 package librarian;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -39,14 +40,25 @@ public class MakeButton extends JButton {
 //レビューを見るボタンを表につける
 class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCellEditor,TableCellRenderer{
 
-	private JButton button;
+	public static DisplayReviewPanel getDisplayReviewP() {
+		return displayReviewP;
+	}
 
+	private JButton button;
+	private static DisplayReviewPanel displayReviewP;
+	
 	public OpenDisplayReviewPanelButton(JTable table,DefaultTableModel model) {
 		this.button=new JButton("レビューを見る");
+		String cmd="DisplayReviewPanel";
+		button.setActionCommand(cmd);
 		button.addActionListener(new ActionListener() {
 			//ボタン押下時のアクション
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				displayReviewP=new DisplayReviewPanel();
+				LBWindow.contentPane.add(displayReviewP, BorderLayout.CENTER);
+				LBWindow.cardPanel.setVisible(false);
+				
 			}
 		});
 

@@ -128,7 +128,6 @@ public class LBPanel extends JPanel {
 		gridBagCon.fill = GridBagConstraints.HORIZONTAL;
 		gridBagLay.setConstraints(component, gridBagCon);
 
-		
 		this.add(component);
 	}
 
@@ -323,10 +322,29 @@ class HomePanel extends LBPanel {
 	public HomePanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("<html>こんにちは、○○さん"
-				+ "<br>また来てくれたのですね。"
-				+ "<br>今日は何をしますか？<html>"), 0, 0, 2, 1, 1, 1);
-		
+		//前回のログインからの日数に応じたお姉さんコメント
+		String specialMessage;
+		String message;
+		long loginDateTo = loginButtonAction.getLoginDateTo().getTime();
+		long loginDateFrom = loginButtonAction.getLoginDateFrom().getTime();
+		long dayDiff = (loginDateTo - loginDateFrom) / (1000 * 60 * 60 * 24);
+		System.out.println("経過日数は" + dayDiff);
+		if (dayDiff >= 31) {
+			specialMessage = "生きてたかぁ！良かった良かった";
+		} else if (dayDiff >= 10) {
+			specialMessage = "お久しぶりですね、お元気でしたか？";
+		} else if (dayDiff >= 4) {
+			specialMessage = "今日は何するんだ？";
+		} else if (dayDiff >= 1) {
+			specialMessage = "今日も来てくれたんですね";
+		} else if (dayDiff == 0) {
+			specialMessage = "何か忘れものですか？";
+		} else {
+			specialMessage = "これからよろしくお願いしますね";
+		}
+		message = "<html>こんにちは、" + loginButtonAction.getLoginUserName() + "さん"
+				+ "<br>" + specialMessage + "<html>";
+		arrangeComponents(new MakeLabel(message), 0, 0, 2, 1, 1, 1);
 
 		MakeButton openFindBookPanelButton = new MakeButton("本を探す", new openFindBookPanelButtonAction(),
 				"FindBookPanel");
@@ -613,8 +631,7 @@ class WriteReviewPanel extends LBPanel {
 		MakeButton postReviewButton = new MakeButton("レビューを投稿する", new postReviewButtonAction());
 		arrangeComponents(postReviewButton, 0, 3, 1, 1, 1, 1);
 
-		MakeButton returnDisplayReviewPanelButton = new MakeButton("やめる", new returnDisplayReviewPanelButtonAction(),
-				"DisplayReviewPanel");
+		MakeButton returnDisplayReviewPanelButton = new MakeButton("やめる", new returnDisplayReviewPanelButtonAction());
 		arrangeComponents(returnDisplayReviewPanelButton, 0, 4, 1, 1, 1, 1);
 
 		arrangeComponents(makeWoman(), 1, 1, 1, 5, 0, 0);
@@ -643,7 +660,7 @@ class WomanRoomPanel extends LBPanel {
 
 		allUserListDisplayTable = new JTable();
 		allUserListDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "No", "ユーザーネーム", "ユーザーID", "ユーザーパスワード", "ユーザー登録日" }));
+				new String[] { "No", "ユーザーネーム", "ユーザーID", "ユーザーパスワード", "ユーザー登録日", "最終ログイン日" }));
 		allUserListDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		allUserListDisplayTableScrollPane = new JScrollPane();
@@ -683,7 +700,3 @@ class WomanRoomPanel extends LBPanel {
 		arrangeComponents(returnHomePanalFromWomanRoomButton, 2, 5, 1, 1, 0, 0);
 	}
 }
-
-
-
-

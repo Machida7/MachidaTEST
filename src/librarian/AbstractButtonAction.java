@@ -5,8 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
@@ -23,18 +25,111 @@ public abstract class AbstractButtonAction implements ActionListener {
 
 //入館ボタン
 class loginButtonAction extends AbstractButtonAction {
-	DBConnection con;
+	private static Date loginDateFrom;
+	private static Date loginDateTo;
+	private static String loginUserName;
+
+	public static String getLoginUserName() {
+		return loginUserName;
+	}
+
+	public static void setLoginUserName(String loginUserName) {
+		loginButtonAction.loginUserName = loginUserName;
+	}
+
+	public static Date getLoginDateFrom() {
+		return loginDateFrom;
+	}
+
+	public static void setLoginDateFrom(Date loginDateFrom) {
+		loginButtonAction.loginDateFrom = loginDateFrom;
+	}
+
+	public static Date getLoginDateTo() {
+		return loginDateTo;
+	}
+
+	public static void setLoginDateTo(Date loginDateTo) {
+		loginButtonAction.loginDateTo = loginDateTo;
+	}
 
 	@Override
 	public void buttonAction() {
-		con = new DBConnection();
-		con.setLoginUser_ID(LoginPanel.getIDinputArea().getText());
-		String User_PW = new String(LoginPanel.getPWinputArea().getPassword());
-		con.setLoginUser_PW(User_PW);
+		DBConnection con = new DBConnection();
+		String userID = LoginPanel.getIDinputArea().getText();
+		String userPW = new String(LoginPanel.getPWinputArea().getPassword());
+
+		con.setLoginUser_ID(userID);
+		con.setLoginUser_PW(userPW);
 
 		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 		System.out.println("IDは" + con.getLoginUser_ID());
 		System.out.println("PWは" + con.getLoginUser_PW());
+
+		//ユーザーネームの取得
+		String selectUserNameSQL = "select user_name from librarian.user_list "
+				+ "where user_id='" + userID + "'";
+		con.sendSQLtoDB(selectUserNameSQL);
+		ResultSet rs;
+		String userName = null;
+		try {
+			rs = con.getPreStatement().executeQuery();
+			while (rs.next()) {
+				userName = rs.getString(1);
+			}
+			rs.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		setLoginUserName(userName);
+
+		//前回のログイン日の取得
+		String selectLoginDate = "select last_login_date from librarian.user_list "
+				+ "where user_id='" + userID + "'";
+		con.sendSQLtoDB(selectLoginDate);
+		ResultSet rs1;
+		String preLoginDateFrom = null;
+		try {
+			rs1 = con.getPreStatement().executeQuery();
+			while (rs1.next()) {
+				preLoginDateFrom = rs1.getString(1);
+			}
+			rs1.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		System.out.println("前回のログイン日は" + preLoginDateFrom);
+
+		//前回のログイン日 String→Dateに変換してセット
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			setLoginDateFrom(sdf.parse(preLoginDateFrom));
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+		}
+		System.out.println("セットした前ログ日" + loginButtonAction.getLoginDateFrom());
+
+		//入館日の記録
+		Calendar preUserLoginDate;
+		preUserLoginDate = Calendar.getInstance();
+		String userLoginDate = sdf.format(preUserLoginDate.getTime());
+		System.out.println("新ログイン日は" + userLoginDate);
+		try {
+			setLoginDateTo(sdf.parse(userLoginDate));
+		} catch (ParseException e1) {
+			e1.printStackTrace();
+		}
+		String updateLoginDateSQL = "update librarian.user_list set last_login_date='" +
+				userLoginDate + "' where user_id='" + con.getLoginUser_ID() + "'";
+		con.sendSQLtoDB(updateLoginDateSQL);
+		try {
+			int num = con.getPreStatement().executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		con.connectionClose();
+
+		LBWindow.cardPanel.add(new HomePanel(), "HomePanel");
 
 	}
 
@@ -145,14 +240,14 @@ class addNewUserButtonAction extends AbstractButtonAction {
 		String userAddedDate = sdf1.format(preUserAddedDate.getTime());
 		//DBに登録
 		String addUser_listSQL = "insert into librarian.user_list(user_name,user_id,"
-				+ "user_pw,birthday,user_added_date)values('" + newUserName + "','" + newUserID +
-				"','" + newUserPW + "','" + newUserBirthday + "','" + userAddedDate + "')";
+				+ "user_pw,birthday,user_added_date,last_login_date)values('" + newUserName + "','" + newUserID +
+				"','" + newUserPW + "','" + newUserBirthday + "','" + userAddedDate + "','99991231')";
 		con.sendSQLtoDB(addUser_listSQL);
 		try {
 			int num = con.getPreStatement().executeUpdate();
 
 			//権限付与
-			String grantSQL = "grant insert,select on librarian.bookshelf to '"
+			String grantSQL = "grant insert,select,update,select on librarian.* to '"
 					+ newUserID + "'@'localhost'";
 			con.sendSQLtoDB(grantSQL);
 			int num1 = con.getPreStatement().executeUpdate();
@@ -302,6 +397,7 @@ class openWomanRecommendationPanelButtonAction extends AbstractButtonAction {
 class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 	static WomanRoomPanel womanRoomP;
 	private DBConnection con;
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		con = new DBConnection();
@@ -325,7 +421,7 @@ class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 		//ユーザーリストを表に表示
 
 		con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
-		String selectUser_listSQL = "select user_number,user_name,user_id,user_pw,user_added_date from librarian.user_list";
+		String selectUser_listSQL = "select user_number,user_name,user_id,user_pw,user_added_date,last_login_date from librarian.user_list";
 		con.sendSQLtoDB(selectUser_listSQL);
 		DefaultTableModel model = (DefaultTableModel) WomanRoomPanel.getAllUserListDisplayTable().getModel();
 		model.setRowCount(0);
@@ -334,7 +430,7 @@ class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 			rs = con.getPreStatement().executeQuery();
 			while (rs.next()) {
 				model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
-						rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5) });
+						rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
 			}
 
 			//全ての本を表に表示
@@ -436,10 +532,7 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 		}
 		con.connectionClose();
 
-		AddBookPanel.getAddBookTitleInputArea().setText("");
-		AddBookPanel.getAddBookAuthorInputArea().setText("");
-		AddBookPanel.getAddBookYearOfIssueInputArea().setText("");
-		AddBookPanel.getAddBookGenreInputArea().setSelectedItem("");
+		
 
 	}
 
@@ -546,12 +639,22 @@ class otherRecommendationDisplayButtonAction extends AbstractButtonAction {
 
 //レビューを書くボタン
 class openWriteReviewPanelButtonAction extends AbstractButtonAction {
+	private static WriteReviewPanel writeReviewP;
+	
+	public static WriteReviewPanel getWriteReviewP() {
+		return writeReviewP;
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		buttonAction();	
 	}
 
 	@Override
 	public void buttonAction() {
+		writeReviewP=new WriteReviewPanel();
+		LBWindow.contentPane.add(writeReviewP, BorderLayout.CENTER);
+		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(false);
 	}
 }
 
@@ -559,11 +662,15 @@ class openWriteReviewPanelButtonAction extends AbstractButtonAction {
 class returnPreviousPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		buttonAction();
+		
 	}
 
 	@Override
 	public void buttonAction() {
-	}
+		LBWindow.contentPane.remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
+		LBWindow.cardPanel.setVisible(true);		
+		}
 }
 
 //レビューを投稿するボタン
@@ -581,11 +688,13 @@ class postReviewButtonAction extends AbstractButtonAction {
 class returnDisplayReviewPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		changePanel(e);
+		buttonAction();
 	}
 
 	@Override
 	public void buttonAction() {
+		LBWindow.contentPane.remove(openWriteReviewPanelButtonAction.getWriteReviewP());
+		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(true);
 	}
 }
 
