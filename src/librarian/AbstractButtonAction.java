@@ -532,7 +532,7 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 		}
 		con.connectionClose();
 
-		
+
 
 	}
 
@@ -640,14 +640,14 @@ class otherRecommendationDisplayButtonAction extends AbstractButtonAction {
 //レビューを書くボタン
 class openWriteReviewPanelButtonAction extends AbstractButtonAction {
 	private static WriteReviewPanel writeReviewP;
-	
+
 	public static WriteReviewPanel getWriteReviewP() {
 		return writeReviewP;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		buttonAction();	
+		buttonAction();
 	}
 
 	@Override
@@ -663,13 +663,13 @@ class returnPreviousPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
-		
+
 	}
 
 	@Override
 	public void buttonAction() {
 		LBWindow.contentPane.remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
-		LBWindow.cardPanel.setVisible(true);		
+		LBWindow.cardPanel.setVisible(true);
 		}
 }
 

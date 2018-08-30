@@ -46,7 +46,7 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 
 	private JButton button;
 	private static DisplayReviewPanel displayReviewP;
-	
+
 	public OpenDisplayReviewPanelButton(JTable table,DefaultTableModel model) {
 		this.button=new JButton("レビューを見る");
 		String cmd="DisplayReviewPanel";
@@ -58,7 +58,7 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 				displayReviewP=new DisplayReviewPanel();
 				LBWindow.contentPane.add(displayReviewP, BorderLayout.CENTER);
 				LBWindow.cardPanel.setVisible(false);
-				
+
 			}
 		});
 
