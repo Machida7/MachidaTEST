@@ -600,7 +600,6 @@ class allBookListDisplayButtonAction extends AbstractButtonAction {
 		ResultSet rs;
 		try {
 			rs = con.getPreStatement().executeQuery();
-			int i = 0;
 			while (rs.next()) {
 				model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
 						rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
@@ -677,10 +676,30 @@ class returnPreviousPanelButtonAction extends AbstractButtonAction {
 class postReviewButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		buttonAction();
 	}
 
+	//以前記入した場合は、内容を更新するようにしたい
 	@Override
 	public void buttonAction() {
+		if(WriteReviewPanel.getStarRating()!=0) {
+		DBConnection con=new DBConnection();
+		String postReviewSQL="insert into librarian.review_list(reviewer_name,reviewed_book,star_rating,impressions)"
+				+ "values('"+loginButtonAction.getLoginUserName()+"','"
+				+OpenDisplayReviewPanelButton.getReviewBookTitle()+"','"
+				+WriteReviewPanel.getStarRating()+"','"+WriteReviewPanel.getReviewInputArea().getText()+"')";
+		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+		con.sendSQLtoDB(postReviewSQL);
+		try {
+			int num = con.getPreStatement().executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		con.connectionClose();
+		System.out.println("レビューを投稿しました");
+		
+		WriteReviewPanel.setStarRating(0);
+		}
 	}
 }
 

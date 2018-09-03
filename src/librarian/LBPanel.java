@@ -6,8 +6,10 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 //パネルを作るクラス
 public class LBPanel extends JPanel {
@@ -335,7 +338,7 @@ class HomePanel extends LBPanel {
 			specialMessage = "お久しぶりですね、お元気でしたか？";
 		} else if (dayDiff >= 4) {
 			specialMessage = "今日は何するんだ？";
-		} else if (dayDiff >= 1) {
+		} else if (dayDiff == 1) {
 			specialMessage = "今日も来てくれたんですね";
 		} else if (dayDiff == 0) {
 			specialMessage = "何か忘れものですか？";
@@ -581,23 +584,41 @@ class WomanRecommendationPanel extends LBPanel {
 
 //レビューを見る画面
 class DisplayReviewPanel extends LBPanel {
-	private JTable ReviewDisplayTable;
+	private static JTable ReviewDisplayTable;
+
+	public static JTable getReviewDisplayTable() {
+		return ReviewDisplayTable;
+	}
+
 	private JScrollPane ReviewDisplayTableScrollPane;
 
 	public DisplayReviewPanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("message"), 0, 0, 1, 1, 1, 1);
+		String message = "『" + OpenDisplayReviewPanelButton.getReviewBookTitle() + "』" +
+				"はこんな感想を頂いてます";
+
+		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
 		ReviewDisplayTable = new JTable();
 		ReviewDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "評価", "感想" }));
+				new String[] { "評価", "感想" }) {
+			//セルを選択不可にする
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		});
 		ReviewDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		ReviewDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		ReviewDisplayTable.setRowHeight(100);
+		ReviewDisplayTable.getColumn("評価").setPreferredWidth(100);
+		ReviewDisplayTable.getColumn("感想").setPreferredWidth(984);
+		JTableHeader tableHeader = ReviewDisplayTable.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
 
 		ReviewDisplayTableScrollPane = new JScrollPane();
 		ReviewDisplayTableScrollPane.setViewportView(ReviewDisplayTable);
-		ReviewDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
+		ReviewDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 300));
 
 		arrangeComponents(ReviewDisplayTableScrollPane, 0, 1, 1, 1, 0, 1);
 
@@ -614,15 +635,63 @@ class DisplayReviewPanel extends LBPanel {
 }
 
 //レビューを書く画面
-class WriteReviewPanel extends LBPanel {
-	private JTextArea reviewInputArea;
+//以前書いた場合は、それを表示させたい（まだ）
+class WriteReviewPanel extends LBPanel implements MouseListener {
+	private static JTextArea reviewInputArea;
+
+	public static JTextArea getReviewInputArea() {
+		return reviewInputArea;
+	}
+
+	private Component star0;
+	private Component star1;
+	private Component star2;
+	private Component star3;
+	private Component star4;
+	private Component star5;
+
+	private static int starRating;
+
+	public static int getStarRating() {
+		return starRating;
+	}
+
+	public static void setStarRating(int starRating) {
+		WriteReviewPanel.starRating = starRating;
+	}
 
 	public WriteReviewPanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("message"), 0, 0, 1, 1, 1, 1);
+		String message = "<html>『" + OpenDisplayReviewPanelButton.getReviewBookTitle() + "』"
+				+ "<br>感想を聞かせてくださるのね<br>楽しみにしていますね<html>";
+		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
-		arrangeComponents(makeStar0(), 0, 1, 1, 1, 1, 1);
+		//星ラベルをあらかじめ作成し、マウスリスナーをセット
+		star0 = makeStar0();
+		star1 = makeStar1();
+		star2 = makeStar2();
+		star3 = makeStar3();
+		star4 = makeStar4();
+		star5 = makeStar5();
+		star0.addMouseListener(this);
+		star1.addMouseListener(this);
+		star2.addMouseListener(this);
+		star3.addMouseListener(this);
+		star4.addMouseListener(this);
+		star5.addMouseListener(this);
+		//全星ラベルを重ねて配置し、星０ラベル以外不可視にする
+		arrangeComponents(star0, 0, 1, 1, 1, 1, 1);
+		arrangeComponents(star1, 0, 1, 1, 1, 1, 1);
+		arrangeComponents(star2, 0, 1, 1, 1, 1, 1);
+		arrangeComponents(star3, 0, 1, 1, 1, 1, 1);
+		arrangeComponents(star4, 0, 1, 1, 1, 1, 1);
+		arrangeComponents(star5, 0, 1, 1, 1, 1, 1);
+		star1.setVisible(false);
+		star2.setVisible(false);
+		star3.setVisible(false);
+		star4.setVisible(false);
+		star5.setVisible(false);
 
 		reviewInputArea = new JTextArea(6, 80);
 		reviewInputArea.setLineWrap(true);
@@ -635,6 +704,102 @@ class WriteReviewPanel extends LBPanel {
 		arrangeComponents(returnDisplayReviewPanelButton, 0, 4, 1, 1, 1, 1);
 
 		arrangeComponents(makeWoman(), 1, 1, 1, 5, 0, 0);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		Point point = e.getPoint();
+		System.out.println("x=" + point.x);
+		System.out.println("y=" + point.y);
+		int x = point.x;
+		int y = point.y;
+
+		if (x > 358 && x <= 433 && y > 11 && y < 73) {
+			star0.setVisible(false);
+			star1.setVisible(true);
+			star2.setVisible(false);
+			star3.setVisible(false);
+			star4.setVisible(false);
+			star5.setVisible(false);
+
+			starRating = 1;
+
+		} else if (x > 433 && x <= 508 && y > 11 && y < 73) {
+			star0.setVisible(false);
+			star1.setVisible(false);
+			star2.setVisible(true);
+			star3.setVisible(false);
+			star4.setVisible(false);
+			star5.setVisible(false);
+
+			starRating = 2;
+
+		} else if (x > 508 && x <= 586 && y > 11 && y < 73) {
+			star0.setVisible(false);
+			star1.setVisible(false);
+			star2.setVisible(false);
+			star3.setVisible(true);
+			star4.setVisible(false);
+			star5.setVisible(false);
+
+			starRating = 3;
+
+		} else if (x > 586 && x <= 663 && y > 11 && y < 73) {
+			star0.setVisible(false);
+			star1.setVisible(false);
+			star2.setVisible(false);
+			star3.setVisible(false);
+			star4.setVisible(true);
+			star5.setVisible(false);
+
+			starRating = 4;
+
+		} else if (x > 663 && x <= 740 && y > 11 && y < 73) {
+			star0.setVisible(false);
+			star1.setVisible(false);
+			star2.setVisible(false);
+			star3.setVisible(false);
+			star4.setVisible(false);
+			star5.setVisible(true);
+
+			starRating = 5;
+
+		} else {
+			star0.setVisible(true);
+			star1.setVisible(false);
+			star2.setVisible(false);
+			star3.setVisible(false);
+			star4.setVisible(false);
+			star5.setVisible(false);
+
+			starRating = 0;
+		}
+		System.out.println("星" + starRating + "つ");
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
 	}
 }
 
