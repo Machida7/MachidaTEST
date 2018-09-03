@@ -40,13 +40,7 @@ public static AddBookPanel getAddBookP() {
 		cardPanel.add(new LoginPanel(), "LoginPanel");
 
 		cardPanel.add(addBookP,"AddBookPanel");
-		cardPanel.add(new ReturnBookPanel(),"ReturnBookPanel");
-		cardPanel.add(new FindBookPanel(),"FindBookPanel");
-		cardPanel.add(new WomanRecommendationPanel(),"WomanRecommendationPanel");
-		cardPanel.add(new DisplayReviewPanel(),"DisplayReviewPanel");
-		cardPanel.add(new WriteReviewPanel(),"WriteReviewPanel");
-
-
+		
 
 		 contentPane = getContentPane();
 		contentPane.add(cardPanel, BorderLayout.CENTER);

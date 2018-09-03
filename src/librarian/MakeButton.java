@@ -5,8 +5,6 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
@@ -48,6 +46,15 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 	private JButton button;
 	private static DisplayReviewPanel displayReviewP;
 	private static String reviewBookTitle;
+	private static Object reviewBookID;
+
+	public static Object getReviewBookID() {
+		return reviewBookID;
+	}
+
+	public static void setReviewBookID(Object reviewBookID) {
+		OpenDisplayReviewPanelButton.reviewBookID = reviewBookID;
+	}
 
 	public static String getReviewBookTitle() {
 		return reviewBookTitle;
@@ -62,7 +69,7 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 	}
 
 	public OpenDisplayReviewPanelButton(JTable table, DefaultTableModel model) {
-		this.button = new JButton("レビューを見る");
+		this.button = new JButton("<html>レビュー<br>見る<html>");
 		String cmd = "DisplayReviewPanel";
 		button.setActionCommand(cmd);
 		button.addActionListener(new ActionListener() {
@@ -72,45 +79,33 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 				//選択された行の本のタイトルを取得
 				int row = FindBookPanel.getBookListDisplayTable().getSelectedRow();
 				String bookTitle = (String) FindBookPanel.getBookListDisplayTable().getValueAt(row, 1);
-				System.out.println( bookTitle+"のレビューを見る" );
+				System.out.println(bookTitle + "のレビューを見る");
 				setReviewBookTitle(bookTitle);
 				
+				Object RBookID=FindBookPanel.getBookListDisplayTable().getValueAt(row, 0);
+				setReviewBookID(RBookID);
+				System.out.println("book_id="+RBookID+"のレビューを見る");
+
 				displayReviewP = new DisplayReviewPanel();
-				
+
 				LBWindow.contentPane.add(displayReviewP, BorderLayout.CENTER);
 				LBWindow.cardPanel.setVisible(false);
+				DBConnection con = new DBConnection();
+				con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 
 				//表に星評価と感想を表示する
-				String selectReviewSQL="select star_rating,impressions from librarian.review_list "
-						+ "where reviewed_book='"+OpenDisplayReviewPanelButton.getReviewBookTitle()+"'";
-				DBConnection con=new DBConnection();
-				con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
-				con.sendSQLtoDB(selectReviewSQL);
-				DefaultTableModel model = (DefaultTableModel)DisplayReviewPanel.getReviewDisplayTable().getModel();
-				model.setRowCount(0);
-				ResultSet rs;
-				try {
-					rs = con.getPreStatement().executeQuery();
-					while (rs.next()) {
-						model.addRow(new String[] {rs.getString(1),rs.getString(2)});
-					}
-					rs.close();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
+				con.selectReview();
 
 				con.connectionClose();
-				
-				TableColumnModel tcm=DisplayReviewPanel.getReviewDisplayTable().getColumnModel();
-				
-				TableColumn col0=tcm.getColumn(0);
+
+				TableColumnModel tcm = DisplayReviewPanel.getReviewDisplayTable().getColumnModel();
+
+				TableColumn col0 = tcm.getColumn(0);
 				col0.setCellRenderer(new StarCellRenderer());
-				
-				TableColumn col1=tcm.getColumn(1);
+
+				TableColumn col1 = tcm.getColumn(1);
 				col1.setCellRenderer(new TextAreaCellRenderer());
-				
-				
-				
+
 			}
 		});
 
@@ -136,52 +131,45 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 	}
 
 }
-//レビュー画面の星評価において、数字を星に変換する
-class StarCellRenderer extends JTextArea implements TableCellRenderer{
+
+//星評価において、数字を星に変換する
+class StarCellRenderer extends JTextArea implements TableCellRenderer {
 	public StarCellRenderer() {
 	}
-	
-	
+
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 			int row, int column) {
-		if(value.equals("1")) {
+		if (value.equals("1")) {
 			setText("★☆☆☆☆");
-		}else if(value.equals("2")){
+		} else if (value.equals("2")) {
 			setText("★★☆☆☆");
-		}else if(value.equals("3")){
+		} else if (value.equals("3")) {
 			setText("★★★☆☆");
-		}else if(value.equals("4")){
+		} else if (value.equals("4")) {
 			setText("★★★★☆");
-		}else if(value.equals("5")){
+		} else if (value.equals("5")) {
 			setText("★★★★★");
+		}else {
+			setText((String) value);
 		}
-		
-		
-		
-		
+
 		return this;
 	}
-	
-	
-	
+
 }
-
-
-
 
 //レビュー画面の感想のセルにおいて、文字を折り返すようにする
 class TextAreaCellRenderer extends JTextArea implements TableCellRenderer {
-	  TextAreaCellRenderer() {
-	    setLineWrap(true);
-	  }
-	  @Override public Component getTableCellRendererComponent(
-		        JTable table, Object value, boolean isSelected, boolean hasFocus,
-		        int row, int column) {
-		    setText((value == null) ? "" : value.toString());
-		    return this;
-		  }
+	TextAreaCellRenderer() {
+		setLineWrap(true);
+	}
+
+	@Override
+	public Component getTableCellRendererComponent(
+			JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
+		setText((value == null) ? "" : value.toString());
+		return this;
+	}
 }
-
-
-

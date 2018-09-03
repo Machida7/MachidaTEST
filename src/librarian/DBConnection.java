@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.table.DefaultTableModel;
+
 //データベースにアクセスするためのクラス
 public class DBConnection {
 	private Connection conn = null;
@@ -80,6 +82,72 @@ public class DBConnection {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	//お姉さんの部屋において、表にユーザーリストを表示する
+	public void selectUser_listAtwlp() {
+	String selectUser_listSQL = "select user_number,user_name,user_id,user_pw,user_added_date,last_login_date from librarian.user_list";
+	sendSQLtoDB(selectUser_listSQL);
+	DefaultTableModel model = (DefaultTableModel) WomanRoomPanel.getAllUserListDisplayTable().getModel();
+	model.setRowCount(0);
+	ResultSet rs;
+	try {
+		rs = getPreStatement().executeQuery();
+		while (rs.next()) {
+			model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+					rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
+		}
+		rs.close();
+
+	} catch (SQLException e) {
+		e.printStackTrace();
+	}
+
+	}
+
+
+	//お姉さんの部屋において、表に本のリストを表示する
+	public void selectBook_listAtwlp() {
+		String selectbookshelfSQL = "select book_id,book_title,book_author,"
+				+ "book_publication date,book_genre,book_added_date from librarian.bookshelf";
+		sendSQLtoDB(selectbookshelfSQL);
+		DefaultTableModel model = (DefaultTableModel) WomanRoomPanel.getAllBookListDisplayTable().getModel();
+		model.setRowCount(0);
+		ResultSet rs;
+
+		try {
+			rs = getPreStatement().executeQuery();
+		while (rs.next()) {
+			model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+					rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
+		}
+		rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+	}
+
+	}
+
+	//レビューを見る画面において、星評価と感想を表示する
+	public void selectReview() {
+		String selectReviewSQL = "select star_rating,impressions from librarian.review_list "
+				+ "where reviewed_bookid='" + OpenDisplayReviewPanelButton.getReviewBookID() + "'";
+
+		sendSQLtoDB(selectReviewSQL);
+		DefaultTableModel model = (DefaultTableModel) DisplayReviewPanel.getReviewDisplayTable().getModel();
+		model.setRowCount(0);
+		ResultSet rs;
+		try {
+			rs = getPreStatement().executeQuery();
+			while (rs.next()) {
+				model.addRow(new String[] { rs.getString(1), rs.getString(2) });
+			}
+			rs.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		
+		
 	}
 
 }

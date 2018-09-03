@@ -128,14 +128,14 @@ public class LBPanel extends JPanel {
 		gridBagCon.gridheight = gridHeight;
 		gridBagCon.weightx = weightX;
 		gridBagCon.weighty = weightY;
-		gridBagCon.fill = GridBagConstraints.HORIZONTAL;
+		gridBagCon.fill = GridBagConstraints.BOTH;
 		gridBagLay.setConstraints(component, gridBagCon);
 
 		this.add(component);
 	}
 
 	//表の選択されている行(横,y)を取得
-	public int getselectedTableRow(JTable table) {
+	public static int getselectedTableRow(JTable table) {
 		int row = table.getSelectedRow();
 		return row;
 	}
@@ -184,7 +184,7 @@ class LoginPanel extends LBPanel {
 		arrangeComponents(loginButton, 0, 3, 1, 1, 0, 0);
 
 		MakeButton openAddUserWindowButton = new MakeButton("新しく作る", new openAddUserWindowButtonAction());
-		arrangeComponents(openAddUserWindowButton, 1, 1, 1, 3, 0, 0);
+		arrangeComponents(openAddUserWindowButton, 1, 2, 1, 3, 0, 0);
 
 		MakeLabel forgetPWHereLabel = new MakeLabel("<html>パスワードを忘れた方は<u>こちら<u><html>", 17);
 		forgetPWHereLabel.addMouseListener(new MouseAdapter() {
@@ -526,12 +526,31 @@ class FindBookPanel extends LBPanel {
 
 		bookListDisplayTable = new JTable();
 		bookListDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "登録日", "みんなの評価", "レビュー" }));
+				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "登録日", "みんなの評価", "レビュー" }) {
+			//セルを選択不可にする
+			public boolean isCellEditable(int row, int column) {
+				if (column == 7) {
+					return true;
+				} else {
+					return false;
+				}
+
+			}
+		});
+		bookListDisplayTable.setRowHeight(50);
 		bookListDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		bookListDisplayTable.getColumn("No").setPreferredWidth(50);
+		bookListDisplayTable.getColumn("タイトル").setPreferredWidth(500);
+		bookListDisplayTable.getColumn("著者名").setPreferredWidth(100);
+		bookListDisplayTable.getColumn("ジャンル").setPreferredWidth(100);
+		bookListDisplayTable.getColumn("みんなの評価").setPreferredWidth(100);
+		bookListDisplayTable.getColumn("レビュー").setPreferredWidth(100);
+
+		bookListDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		bookListDisplayTableScrollPane = new JScrollPane();
 		bookListDisplayTableScrollPane.setViewportView(bookListDisplayTable);
-		bookListDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
+		bookListDisplayTableScrollPane.setPreferredSize(new Dimension(1100, 200));
 		arrangeComponents(bookListDisplayTableScrollPane, 0, 3, 2, 1, 0, 1);
 
 		arrangeComponents(borrowBookButton, 0, 4, 2, 1, 1, 1);
@@ -549,13 +568,20 @@ class FindBookPanel extends LBPanel {
 
 //お姉さんのおすすめ画面
 class WomanRecommendationPanel extends LBPanel {
-	private JTable RecommendationDisplayTable;
+	private static JTable RecommendationDisplayTable;
+	public static JTable getRecommendationDisplayTable() {
+		return RecommendationDisplayTable;
+	}
+
 	private JScrollPane RecommendationDisplayTableScrollPane;
 
 	public WomanRecommendationPanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("message"), 0, 0, 1, 1, 1, 1);
+		String message="<html>"+loginButtonAction.getLoginUserName()+"さん"+
+		"<br>こんな本はいかがですか?<html>";
+		
+		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
 		MakeButton otherRecommendationDisplayButton = new MakeButton("他のおすすめ",
 				new otherRecommendationDisplayButtonAction());
@@ -566,7 +592,18 @@ class WomanRecommendationPanel extends LBPanel {
 				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "みんなの評価", "レビュー" }));
 		RecommendationDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		RecommendationDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
+		RecommendationDisplayTable.setRowHeight(50);
+		RecommendationDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		RecommendationDisplayTable.getColumn("No").setPreferredWidth(50);
+		RecommendationDisplayTable.getColumn("タイトル").setPreferredWidth(500);
+		RecommendationDisplayTable.getColumn("著者名").setPreferredWidth(100);
+		RecommendationDisplayTable.getColumn("ジャンル").setPreferredWidth(100);
+		RecommendationDisplayTable.getColumn("みんなの評価").setPreferredWidth(100);
+		RecommendationDisplayTable.getColumn("レビュー").setPreferredWidth(100);
+		
+		
+		
+		
 		RecommendationDisplayTableScrollPane = new JScrollPane();
 		RecommendationDisplayTableScrollPane.setViewportView(RecommendationDisplayTable);
 		RecommendationDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
@@ -595,8 +632,8 @@ class DisplayReviewPanel extends LBPanel {
 	public DisplayReviewPanel() {
 		prepareGridBag();
 
-		String message = "『" + OpenDisplayReviewPanelButton.getReviewBookTitle() + "』" +
-				"はこんな感想を頂いてます";
+		String message = "<html>『" + OpenDisplayReviewPanelButton.getReviewBookTitle() + "』" +
+				"は<br>こんな感想を頂いてます<html>";
 
 		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
@@ -618,7 +655,7 @@ class DisplayReviewPanel extends LBPanel {
 
 		ReviewDisplayTableScrollPane = new JScrollPane();
 		ReviewDisplayTableScrollPane.setViewportView(ReviewDisplayTable);
-		ReviewDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 300));
+		ReviewDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 400));
 
 		arrangeComponents(ReviewDisplayTableScrollPane, 0, 1, 1, 1, 0, 1);
 
@@ -700,7 +737,7 @@ class WriteReviewPanel extends LBPanel implements MouseListener {
 		MakeButton postReviewButton = new MakeButton("レビューを投稿する", new postReviewButtonAction());
 		arrangeComponents(postReviewButton, 0, 3, 1, 1, 1, 1);
 
-		MakeButton returnDisplayReviewPanelButton = new MakeButton("やめる", new returnDisplayReviewPanelButtonAction());
+		MakeButton returnDisplayReviewPanelButton = new MakeButton("戻る", new returnDisplayReviewPanelButtonAction());
 		arrangeComponents(returnDisplayReviewPanelButton, 0, 4, 1, 1, 1, 1);
 
 		arrangeComponents(makeWoman(), 1, 1, 1, 5, 0, 0);
@@ -713,57 +750,61 @@ class WriteReviewPanel extends LBPanel implements MouseListener {
 		System.out.println("y=" + point.y);
 		int x = point.x;
 		int y = point.y;
+		int Ymin = 53;
+		int Ymax = 119;
 
-		if (x > 358 && x <= 433 && y > 11 && y < 73) {
-			star0.setVisible(false);
-			star1.setVisible(true);
-			star2.setVisible(false);
-			star3.setVisible(false);
-			star4.setVisible(false);
-			star5.setVisible(false);
+		if (y > Ymin && y < Ymax) {
 
-			starRating = 1;
+			if (x > 358 && x <= 433) {
+				star0.setVisible(false);
+				star1.setVisible(true);
+				star2.setVisible(false);
+				star3.setVisible(false);
+				star4.setVisible(false);
+				star5.setVisible(false);
 
-		} else if (x > 433 && x <= 508 && y > 11 && y < 73) {
-			star0.setVisible(false);
-			star1.setVisible(false);
-			star2.setVisible(true);
-			star3.setVisible(false);
-			star4.setVisible(false);
-			star5.setVisible(false);
+				starRating = 1;
 
-			starRating = 2;
+			} else if (x > 433 && x <= 508) {
+				star0.setVisible(false);
+				star1.setVisible(false);
+				star2.setVisible(true);
+				star3.setVisible(false);
+				star4.setVisible(false);
+				star5.setVisible(false);
 
-		} else if (x > 508 && x <= 586 && y > 11 && y < 73) {
-			star0.setVisible(false);
-			star1.setVisible(false);
-			star2.setVisible(false);
-			star3.setVisible(true);
-			star4.setVisible(false);
-			star5.setVisible(false);
+				starRating = 2;
 
-			starRating = 3;
+			} else if (x > 508 && x <= 586) {
+				star0.setVisible(false);
+				star1.setVisible(false);
+				star2.setVisible(false);
+				star3.setVisible(true);
+				star4.setVisible(false);
+				star5.setVisible(false);
 
-		} else if (x > 586 && x <= 663 && y > 11 && y < 73) {
-			star0.setVisible(false);
-			star1.setVisible(false);
-			star2.setVisible(false);
-			star3.setVisible(false);
-			star4.setVisible(true);
-			star5.setVisible(false);
+				starRating = 3;
 
-			starRating = 4;
+			} else if (x > 586 && x <= 663) {
+				star0.setVisible(false);
+				star1.setVisible(false);
+				star2.setVisible(false);
+				star3.setVisible(false);
+				star4.setVisible(true);
+				star5.setVisible(false);
 
-		} else if (x > 663 && x <= 740 && y > 11 && y < 73) {
-			star0.setVisible(false);
-			star1.setVisible(false);
-			star2.setVisible(false);
-			star3.setVisible(false);
-			star4.setVisible(false);
-			star5.setVisible(true);
+				starRating = 4;
 
-			starRating = 5;
+			} else if (x > 663 && x <= 740) {
+				star0.setVisible(false);
+				star1.setVisible(false);
+				star2.setVisible(false);
+				star3.setVisible(false);
+				star4.setVisible(false);
+				star5.setVisible(true);
 
+				starRating = 5;
+			}
 		} else {
 			star0.setVisible(true);
 			star1.setVisible(false);
@@ -774,6 +815,7 @@ class WriteReviewPanel extends LBPanel implements MouseListener {
 
 			starRating = 0;
 		}
+
 		System.out.println("星" + starRating + "つ");
 
 	}
