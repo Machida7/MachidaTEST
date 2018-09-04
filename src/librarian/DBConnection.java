@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 //データベースにアクセスするためのクラス
 public class DBConnection {
@@ -149,5 +151,53 @@ public class DBConnection {
 		
 		
 	}
+	
+	public void selectBorrowBook() {
+		
+		//借りた本を表に表示
+		String selectBorrowSQL = "select borrowed_book_id,borrowed_date,return_date,borrowed_book_title,b_book_id from "
+				+ "librarian.borrowed_book where borrower='" + getLoginUser_ID() + "'";
+		dbConnection(getLoginUser_ID(), getLoginUser_PW());
+		sendSQLtoDB(selectBorrowSQL);
 
-}
+		DefaultTableModel model = (DefaultTableModel) ReturnBookPanel.getBorrowedBookDisplayTable().getModel();
+		TableColumnModel tcm = ReturnBookPanel.getBorrowedBookDisplayTable().getColumnModel();
+
+		TableColumn col5 = tcm.getColumn(5);
+		col5.setCellRenderer(new nullCellRenderer());
+
+		OpenDisplayReviewPanelButton renderer = new OpenDisplayReviewPanelButton(
+				ReturnBookPanel.getBorrowedBookDisplayTable(), model);
+		TableColumn column4 = tcm.getColumn(4);
+		column4.setCellEditor(renderer);
+		column4.setCellRenderer(renderer);
+
+		model.setRowCount(0);
+		ResultSet rs;
+		try {
+			rs = getPreStatement().executeQuery();
+			while (rs.next()) {
+				if (rs.getString(3).equals("9999-12-31") == true) {
+					model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+							rs.getString(4), rs.getString(2), "未返却", "", rs.getString(5),
+					});
+				} else if (rs.getString(3).equals("9999-12-31") == false) {
+					model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+							rs.getString(4), rs.getString(2), rs.getString(3), "", rs.getString(5),
+					});
+
+				}
+
+			}
+
+			rs.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		connectionClose();
+	}
+		
+	}
+
+

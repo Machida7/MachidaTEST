@@ -67,6 +67,14 @@ public class LBPanel extends JPanel {
 
 	protected MakeButton borrowBookButton = new MakeButton("借りる", new borrowBookButtonAction());
 
+	/* ページ番号的な
+	 * 1　本を探す画面
+	 * 2　お姉さんのおすすめ画面
+	 * 3  本の返却画面
+	 */
+	private static int cardNum;
+
+
 	//GridBagLayoutを呼び出す
 	public void prepareGridBag() {
 		gridBagLay = new GridBagLayout();
@@ -144,6 +152,14 @@ public class LBPanel extends JPanel {
 	public int getselectedTableColumn(JTable table) {
 		int column = table.getSelectedRow();
 		return column;
+	}
+
+	public static int getCardNum() {
+		return cardNum;
+	}
+
+	public static void setCardNum(int cardNum) {
+		LBPanel.cardNum = cardNum;
 	}
 
 }
@@ -474,20 +490,32 @@ class AddBookPanel extends LBPanel {
 
 //本返却画面
 class ReturnBookPanel extends LBPanel {
-	private JTable borrowedBookDisplayTable;
+	private static JTable borrowedBookDisplayTable;
+	public static JTable getBorrowedBookDisplayTable() {
+		return borrowedBookDisplayTable;
+	}
+
 	private JScrollPane borrowedBookDisplayTableScrollPane;
 
 	public ReturnBookPanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("Message"), 0, 0, 2, 1, 1, 1);
+		arrangeComponents(new MakeLabel("message"), 0, 0, 2, 1, 1, 1);
 
 		borrowedBookDisplayTable = new JTable();
 		borrowedBookDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "借りた日", "返した日", "タイトル", "著者名", "レビュー" }));
+				new String[] { "No","タイトル","借りた日", "返した日",   "レビュー","" }));
 		borrowedBookDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		borrowedBookDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-
+		borrowedBookDisplayTable.getColumn("タイトル").setPreferredWidth(500);
+		borrowedBookDisplayTable.getColumn("レビュー").setPreferredWidth(100);
+		borrowedBookDisplayTable.getColumn("").setPreferredWidth(0);
+		borrowedBookDisplayTable.setRowHeight(50);
+		borrowedBookDisplayTable.setAutoCreateRowSorter(true);
+		
+		
+		
+		
 		borrowedBookDisplayTableScrollPane = new JScrollPane();
 		borrowedBookDisplayTableScrollPane.setViewportView(borrowedBookDisplayTable);
 		borrowedBookDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
@@ -545,7 +573,7 @@ class FindBookPanel extends LBPanel {
 		bookListDisplayTable.getColumn("ジャンル").setPreferredWidth(100);
 		bookListDisplayTable.getColumn("みんなの評価").setPreferredWidth(100);
 		bookListDisplayTable.getColumn("レビュー").setPreferredWidth(100);
-
+		bookListDisplayTable.setAutoCreateRowSorter(true);
 		bookListDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
 		bookListDisplayTableScrollPane = new JScrollPane();
@@ -580,7 +608,7 @@ class WomanRecommendationPanel extends LBPanel {
 
 		String message="<html>"+loginButtonAction.getLoginUserName()+"さん"+
 		"<br>こんな本はいかがですか?<html>";
-		
+
 		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
 		MakeButton otherRecommendationDisplayButton = new MakeButton("他のおすすめ",
@@ -600,10 +628,10 @@ class WomanRecommendationPanel extends LBPanel {
 		RecommendationDisplayTable.getColumn("ジャンル").setPreferredWidth(100);
 		RecommendationDisplayTable.getColumn("みんなの評価").setPreferredWidth(100);
 		RecommendationDisplayTable.getColumn("レビュー").setPreferredWidth(100);
-		
-		
-		
-		
+		RecommendationDisplayTable.setAutoCreateRowSorter(true);
+
+
+
 		RecommendationDisplayTableScrollPane = new JScrollPane();
 		RecommendationDisplayTableScrollPane.setViewportView(RecommendationDisplayTable);
 		RecommendationDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
@@ -650,6 +678,8 @@ class DisplayReviewPanel extends LBPanel {
 		ReviewDisplayTable.setRowHeight(100);
 		ReviewDisplayTable.getColumn("評価").setPreferredWidth(100);
 		ReviewDisplayTable.getColumn("感想").setPreferredWidth(984);
+		ReviewDisplayTable.setAutoCreateRowSorter(true);
+		
 		JTableHeader tableHeader = ReviewDisplayTable.getTableHeader();
 		tableHeader.setReorderingAllowed(false);
 
