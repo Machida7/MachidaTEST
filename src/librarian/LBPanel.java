@@ -28,6 +28,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 //パネルを作るクラス
 public class LBPanel extends JPanel {
@@ -73,7 +75,6 @@ public class LBPanel extends JPanel {
 	 * 3  本の返却画面
 	 */
 	private static int cardNum;
-
 
 	//GridBagLayoutを呼び出す
 	public void prepareGridBag() {
@@ -187,20 +188,24 @@ class LoginPanel extends LBPanel {
 	public LoginPanel() {
 		prepareGridBag();
 
-		arrangeComponents(new MakeLabel("<html>ようこそ!<br>会員証はありますか?<html>"), 0, 0, 2, 1, 0, 1);
+		arrangeComponents(new MakeLabel("<html>ようこそ!<br>会員証はありますか?<html>"), 0, 0, 3, 1, 0, 1);
+
+		arrangeComponents(new MakeLabel("ID   ", 17), 0, 1, 1, 1, 0, 0);
 
 		IDinputArea = new JTextField(20);
-		arrangeComponents(IDinputArea, 0, 1, 1, 1, 0, 0);
+		arrangeComponents(IDinputArea, 1, 1, 1, 1, 0, 0);
+
+		arrangeComponents(new MakeLabel("PW   ", 17), 0, 2, 2, 1, 0, 0);
 
 		PWinputArea = new JPasswordField(20);
 		PWinputArea.setEchoChar('*');
-		arrangeComponents(PWinputArea, 0, 2, 1, 1, 0, 0);
+		arrangeComponents(PWinputArea, 1, 2, 1, 1, 0, 0);
 
 		MakeButton loginButton = new MakeButton("入館", new loginButtonAction(), "HomePanel");
-		arrangeComponents(loginButton, 0, 3, 1, 1, 0, 0);
+		arrangeComponents(loginButton, 1, 3, 1, 1, 0, 0);
 
 		MakeButton openAddUserWindowButton = new MakeButton("新しく作る", new openAddUserWindowButtonAction());
-		arrangeComponents(openAddUserWindowButton, 1, 2, 1, 3, 0, 0);
+		arrangeComponents(openAddUserWindowButton, 2, 2, 1, 3, 0, 0);
 
 		MakeLabel forgetPWHereLabel = new MakeLabel("<html>パスワードを忘れた方は<u>こちら<u><html>", 17);
 		forgetPWHereLabel.addMouseListener(new MouseAdapter() {
@@ -227,9 +232,9 @@ class LoginPanel extends LBPanel {
 			}
 
 		});
-		arrangeComponents(forgetPWHereLabel, 0, 4, 1, 1, 0, 0);
+		arrangeComponents(forgetPWHereLabel, 1, 4, 1, 1, 0, 0);
 
-		arrangeComponents(makeWoman(), 3, 1, 1, 5, 0, 0);
+		arrangeComponents(makeWoman(), 4, 1, 1, 5, 0, 0);
 
 	}
 
@@ -237,26 +242,35 @@ class LoginPanel extends LBPanel {
 
 //新規ユーザー登録画面
 class AddNewUserPanel extends LBPanel {
-	private JTextField newUserNameInputArea;
-	private JTextField newUserIDInputArea;
-	private JTextField newUserPWInputArea;
-	private JTextField newUserBirthdayInputArea;
+	private JTextFt newUserNameInputArea;
+	private JTextFt newUserIDInputArea;
+	private JTextFt newUserPWInputArea;
+	private JTextFt newUserBirthdayInputArea;
 
-	public JTextField getNewUserNameInputArea() {
+	public JTextFt getNewUserNameInputArea() {
 		return newUserNameInputArea;
 	}
 
-	public JTextField getNewUserIDInputArea() {
+	public JTextFt getNewUserIDInputArea() {
 		return newUserIDInputArea;
 	}
 
-	public JTextField getNewUserPWInputArea() {
+	public JTextFt getNewUserPWInputArea() {
 		return newUserPWInputArea;
 	}
 
-	public JTextField getNewUserBirthdayInputArea() {
+	public JTextFt getNewUserBirthdayInputArea() {
 		return newUserBirthdayInputArea;
 	}
+
+	public void focusOK() {
+		newUserNameInputArea.setFocusable(true);
+		newUserIDInputArea.setFocusable(true);
+		newUserPWInputArea.setFocusable(true);
+		newUserBirthdayInputArea.setFocusable(true);
+	}
+
+
 
 	public AddNewUserPanel() {
 		prepareGridBag();
@@ -266,22 +280,50 @@ class AddNewUserPanel extends LBPanel {
 
 		arrangeComponents(new MakeLabel("名前", 17), 0, 1, 1, 1, 0, 0.1);
 
-		newUserNameInputArea = new JTextField(20);
+		newUserNameInputArea = new JTextFt("20文字まで");
+		newUserNameInputArea.setFocusable(false);
+		newUserNameInputArea.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				focusOK();
+			}
+
+		});
 		arrangeComponents(newUserNameInputArea, 1, 1, 1, 1, 0, 0.1);
 
 		arrangeComponents(new MakeLabel("ID", 17), 0, 2, 1, 1, 0, 0.1);
 
-		newUserIDInputArea = new JTextField(20);
+		newUserIDInputArea = new JTextFt("半角英数字16文字まで");
+		newUserIDInputArea.setFocusable(false);
+		newUserIDInputArea.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				focusOK();
+			}
+
+		});
 		arrangeComponents(newUserIDInputArea, 1, 2, 1, 1, 0, 0.1);
 
 		arrangeComponents(new MakeLabel("パスワード", 17), 0, 3, 1, 1, 0, 0.1);
 
-		newUserPWInputArea = new JTextField(20);
+		newUserPWInputArea = new JTextFt("半角英数字16文字まで");
+		newUserPWInputArea.setFocusable(false);
+		newUserPWInputArea.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				focusOK();
+			}
+
+		});
 		arrangeComponents(newUserPWInputArea, 1, 3, 1, 1, 0, 0.1);
 
 		arrangeComponents(new MakeLabel("誕生日", 17), 0, 4, 1, 1, 0, 0.1);
 
-		newUserBirthdayInputArea = new JTextField(20);
+		newUserBirthdayInputArea = new JTextFt("例：19990101");
+		newUserBirthdayInputArea.setFocusable(false);
+		newUserBirthdayInputArea.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				focusOK();
+			}
+
+		});
 		arrangeComponents(newUserBirthdayInputArea, 1, 4, 1, 1, 0, 0.1);
 
 		MakeButton addNewUserButton = new MakeButton("登録", new addNewUserButtonAction());
@@ -393,6 +435,8 @@ class HomePanel extends LBPanel {
 
 		arrangeComponents(makeWoman(), 2, 1, 1, 5, 0, 0);
 
+
+
 	}
 }
 
@@ -491,6 +535,7 @@ class AddBookPanel extends LBPanel {
 //本返却画面
 class ReturnBookPanel extends LBPanel {
 	private static JTable borrowedBookDisplayTable;
+
 	public static JTable getBorrowedBookDisplayTable() {
 		return borrowedBookDisplayTable;
 	}
@@ -499,23 +544,57 @@ class ReturnBookPanel extends LBPanel {
 
 	public ReturnBookPanel() {
 		prepareGridBag();
+		//読んだ冊数に応じてお姉さんのメッセージ
+		String message = null;
+		//読んだ冊数の取得
+		DBConnection con = new DBConnection();
+		String selectSqlNumOfRead = "select number_of_read from librarian.user_list "
+				+ "where user_id='" + con.getLoginUser_ID() + "'";
+		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+		con.sendSQLtoDB(selectSqlNumOfRead);
+		ResultSet rs;
+		int numOfRead = 0;
+		try {
+			rs = con.getPreStatement().executeQuery();
+			while (rs.next()) {
+				numOfRead = rs.getInt(1);
+			}
+			if (numOfRead >= 1) {
+				message="<html>"+numOfRead+"冊読みました<html>";
+				if (numOfRead >= 10) {
+					message += "<br>すごいですね！<html>";
+				} else if (numOfRead >= 5) {
+					message = "<br>読書はいいことです<html>";
+				} else if (numOfRead >= 3) {
+					message = "<br>たくさん読んでね！<html>";
+				} else if (numOfRead >= 1) {
+					message = "<br>本を読む人は好きですYO<html>";
+				}
+			} else if (numOfRead == 0) {
+				message = "<html>本を読め<br>おすすめ見ろ<html>";
+			}
 
-		arrangeComponents(new MakeLabel("message"), 0, 0, 2, 1, 1, 1);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		arrangeComponents(new MakeLabel(message), 0, 0, 2, 1, 1, 1);
 
 		borrowedBookDisplayTable = new JTable();
 		borrowedBookDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "No","タイトル","借りた日", "返した日",   "レビュー","" }));
+				new String[] { "No", "タイトル", "借りた日", "返した日", "レビュー", "" }));
 		borrowedBookDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		borrowedBookDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-		borrowedBookDisplayTable.getColumn("タイトル").setPreferredWidth(500);
+		borrowedBookDisplayTable.getColumn("タイトル").setPreferredWidth(750);
 		borrowedBookDisplayTable.getColumn("レビュー").setPreferredWidth(100);
 		borrowedBookDisplayTable.getColumn("").setPreferredWidth(0);
 		borrowedBookDisplayTable.setRowHeight(50);
 		borrowedBookDisplayTable.setAutoCreateRowSorter(true);
-		
-		
-		
-		
+		TableColumnModel tcm = borrowedBookDisplayTable.getColumnModel();
+		//文字列を折り返す
+		TableColumn col1 = tcm.getColumn(1);
+		col1.setCellRenderer(new TextAreaCellRenderer());
+
 		borrowedBookDisplayTableScrollPane = new JScrollPane();
 		borrowedBookDisplayTableScrollPane.setViewportView(borrowedBookDisplayTable);
 		borrowedBookDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
@@ -533,7 +612,12 @@ class ReturnBookPanel extends LBPanel {
 
 //本の検索画面
 class FindBookPanel extends LBPanel {
-	private JTextField freeWordSearchInputArea;
+	private static JTextField freeWordSearchInputArea;
+
+	public static JTextField getFreeWordSearchInputArea() {
+		return freeWordSearchInputArea;
+	}
+
 	private static JTable bookListDisplayTable;
 	private JScrollPane bookListDisplayTableScrollPane;
 
@@ -597,17 +681,21 @@ class FindBookPanel extends LBPanel {
 //お姉さんのおすすめ画面
 class WomanRecommendationPanel extends LBPanel {
 	private static JTable RecommendationDisplayTable;
+
 	public static JTable getRecommendationDisplayTable() {
 		return RecommendationDisplayTable;
 	}
 
 	private JScrollPane RecommendationDisplayTableScrollPane;
 
+	//おすすめの表示状態　評価高い：0　似た本：１
+	private static int recomNum;
+
 	public WomanRecommendationPanel() {
 		prepareGridBag();
 
-		String message="<html>"+loginButtonAction.getLoginUserName()+"さん"+
-		"<br>こんな本はいかがですか?<html>";
+		String message = "<html>" + loginButtonAction.getLoginUserName() + "さん" +
+				"<br>こんな本はいかがですか?<html>";
 
 		arrangeComponents(new MakeLabel(message), 0, 0, 1, 1, 1, 1);
 
@@ -630,8 +718,6 @@ class WomanRecommendationPanel extends LBPanel {
 		RecommendationDisplayTable.getColumn("レビュー").setPreferredWidth(100);
 		RecommendationDisplayTable.setAutoCreateRowSorter(true);
 
-
-
 		RecommendationDisplayTableScrollPane = new JScrollPane();
 		RecommendationDisplayTableScrollPane.setViewportView(RecommendationDisplayTable);
 		RecommendationDisplayTableScrollPane.setPreferredSize(new Dimension(1000, 200));
@@ -644,6 +730,14 @@ class WomanRecommendationPanel extends LBPanel {
 
 		arrangeComponents(makeWoman(), 3, 1, 1, 5, 0, 0);
 
+	}
+
+	public static int getRecomNum() {
+		return recomNum;
+	}
+
+	public static void setRecomNum(int recomNum) {
+		WomanRecommendationPanel.recomNum = recomNum;
 	}
 }
 
@@ -679,7 +773,7 @@ class DisplayReviewPanel extends LBPanel {
 		ReviewDisplayTable.getColumn("評価").setPreferredWidth(100);
 		ReviewDisplayTable.getColumn("感想").setPreferredWidth(984);
 		ReviewDisplayTable.setAutoCreateRowSorter(true);
-		
+
 		JTableHeader tableHeader = ReviewDisplayTable.getTableHeader();
 		tableHeader.setReorderingAllowed(false);
 

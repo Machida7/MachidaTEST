@@ -14,6 +14,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import test.JLabelMoveTEST;
+
 //各ボタンのアクションの抽象クラス
 public abstract class AbstractButtonAction implements ActionListener {
 	public abstract void buttonAction();
@@ -97,6 +99,11 @@ class loginButtonAction extends AbstractButtonAction {
 		String userID = LoginPanel.getIDinputArea().getText();
 		String userPW = new String(LoginPanel.getPWinputArea().getPassword());
 
+		if(Validate.blankCheck(userID)==1000 || Validate.blankCheck(userPW)==1000) {
+			System.out.println("入力してぇ！");
+		}else {
+
+
 		con.setLoginUser_ID(userID);
 		con.setLoginUser_PW(userPW);
 
@@ -164,7 +171,7 @@ class loginButtonAction extends AbstractButtonAction {
 		LBWindow.cardPanel.add(returnBookP, "ReturnBookPanel");
 		LBWindow.cardPanel.add(findBookP, "FindBookPanel");
 		LBWindow.cardPanel.add(womanRecommendationP, "WomanRecommendationPanel");
-
+		}
 	}
 
 	@Override
@@ -207,10 +214,17 @@ class addNewUserButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		String newUserID;
-		newUserID = openAddUserWindowButtonAction.getAddNewUserP().getNewUserIDInputArea().getText();
-		String newUserPW;
-		newUserPW = openAddUserWindowButtonAction.getAddNewUserP().getNewUserPWInputArea().getText();
+		String newUserID= openAddUserWindowButtonAction.getAddNewUserP().getNewUserIDInputArea().getText();
+		String newUserPW= openAddUserWindowButtonAction.getAddNewUserP().getNewUserPWInputArea().getText();
+		String newUserName= openAddUserWindowButtonAction.getAddNewUserP().getNewUserNameInputArea().getText();
+		String newUserBirthday= openAddUserWindowButtonAction.getAddNewUserP().getNewUserBirthdayInputArea().getText();
+
+		if( newUserID.equals("20文字まで") || newUserPW.equals("半角英数字16文字まで") ||
+				newUserName.equals("半角英数字16文字まで") || newUserBirthday.equals("例：19990101") || Validate.blankCheck(newUserID)==1000 ||Validate.blankCheck(newUserPW)==1000
+				||Validate.blankCheck(newUserName)==1000 ||Validate.blankCheck(newUserBirthday)==1000 ) {
+			System.out.println("入力するのだ");
+		}else {
+
 
 		//コンポジション
 		DBConnection con = new DBConnection();
@@ -240,10 +254,6 @@ class addNewUserButtonAction extends AbstractButtonAction {
 		}
 
 		//user_listに新規ユーザーを追加
-		String newUserName;
-		newUserName = openAddUserWindowButtonAction.getAddNewUserP().getNewUserNameInputArea().getText();
-		String newUserBirthday;
-		newUserBirthday = openAddUserWindowButtonAction.getAddNewUserP().getNewUserBirthdayInputArea().getText();
 
 		/*
 		Date UserBirthday = null;
@@ -296,7 +306,7 @@ class addNewUserButtonAction extends AbstractButtonAction {
 
 	}
 }
-
+}
 //新規ユーザー登録画面からログイン画面に戻るボタン
 class returnLoginPanelFromAddNewUserButtonAction extends AbstractButtonAction {
 	@Override
@@ -398,11 +408,14 @@ class openAddBookPanelButtonAction extends AbstractButtonAction {
 class openPlayWithWomanPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		buttonAction();
 		changePanel(e);
+
 	}
 
 	@Override
 	public void buttonAction() {
+		new JLabelMoveTEST();
 	}
 }
 
@@ -421,7 +434,7 @@ class openReturnBookPanelButtonAction extends AbstractButtonAction {
 		DBConnection con = new DBConnection();
 		con.selectBorrowBook();
 	}
-		
+
 }
 
 //お姉さんのおすすめボタン
@@ -430,7 +443,10 @@ class openWomanRecommendationPanelButtonAction extends AbstractButtonAction {
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
 		changePanel(e);
+		//レビューを見るボタンのアクションに影響
 		LBPanel.setCardNum(2);
+		//他のおすすめ表示ボタンのアクションに影響
+		WomanRecommendationPanel.setRecomNum(0);
 		System.out.println("ページ番号は" + LBPanel.getCardNum());
 	}
 
@@ -457,6 +473,7 @@ class openWomanRecommendationPanelButtonAction extends AbstractButtonAction {
 		column6.setCellEditor(renderer);
 		column6.setCellRenderer(renderer);
 
+		//評価が高いものを表に表示
 		model.setRowCount(0);
 		ResultSet rs;
 		try {
@@ -496,10 +513,108 @@ class openWomanRecommendationPanelButtonAction extends AbstractButtonAction {
 class otherRecommendationDisplayButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		openWomanRecommendationPanelButtonAction action = new openWomanRecommendationPanelButtonAction();
+
+		if (WomanRecommendationPanel.getRecomNum() == 0) {
+			buttonAction();
+			WomanRecommendationPanel.setRecomNum(1);
+			System.out.println("ページ番号は" + LBPanel.getCardNum());
+
+		} else if (WomanRecommendationPanel.getRecomNum() == 1) {
+			action.buttonAction();
+			WomanRecommendationPanel.setRecomNum(0);
+			System.out.println("ページ番号は" + LBPanel.getCardNum());
+		}
+
 	}
 
 	@Override
 	public void buttonAction() {
+		DBConnection con = new DBConnection();
+
+		//最後に借りた本のIDの取得
+		String selectSqlLastBookID = "select last_borrowed_book from librarian.user_list where user_id='"
+				+ con.getLoginUser_ID() + "'";
+		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+		con.sendSQLtoDB(selectSqlLastBookID);
+		ResultSet rs;
+		int lastBookID = 0;
+		try {
+			rs = con.getPreStatement().executeQuery();
+			while (rs.next()) {
+				lastBookID = rs.getInt(1);
+			}
+
+			//最後に借りた本のタイトル、著者名、ジャンルを取得（検索条件にする）
+			String selectSqlLastBook = "select book_author,book_genre from librarian.bookshelf where "
+					+ "book_id='" + lastBookID + "'";
+			con.sendSQLtoDB(selectSqlLastBook);
+			ResultSet rs1;
+			String lastBookAuthor = null;
+			String lastBookGenre = null;
+			rs1 = con.getPreStatement().executeQuery();
+			while (rs1.next()) {
+				lastBookAuthor = rs1.getString(1);
+				lastBookGenre = rs1.getString(2);
+			}
+			System.out.println("最後に借りたのは" + lastBookID + lastBookAuthor + lastBookGenre);
+
+			//最後に借りた本と同じ作者、ジャンルの本を取得
+			String selectSqlSimilarBook = "select book_id,book_title,book_author,book_publication,"
+					+ "book_genre,number_of_reviewer,number_of_star from librarian.bookshelf "
+					+ "where (book_author='" + lastBookAuthor + "' or book_genre='" + lastBookGenre + "') and "
+					+ "book_id !='" + lastBookID + "'";
+			con.sendSQLtoDB(selectSqlSimilarBook);
+			DefaultTableModel model = (DefaultTableModel) WomanRecommendationPanel.getRecommendationDisplayTable()
+					.getModel();
+
+			TableColumnModel tcm = WomanRecommendationPanel.getRecommendationDisplayTable().getColumnModel();
+
+			//"みんなの評価"列に星評価を表示
+			TableColumn col5 = tcm.getColumn(5);
+			col5.setCellRenderer(new StarCellRenderer());
+
+			//レビューを見るボタンを表につける
+			OpenDisplayReviewPanelButton renderer = new OpenDisplayReviewPanelButton(
+					FindBookPanel.getBookListDisplayTable(), model);
+			TableColumn column6 = tcm.getColumn(6);
+			column6.setCellEditor(renderer);
+			column6.setCellRenderer(renderer);
+
+			model.setRowCount(0);
+			ResultSet rs2;
+			rs2 = con.getPreStatement().executeQuery();
+			while (rs2.next()) {
+				int numberOfReviewer = Integer.parseInt(rs2.getString(6));
+				System.out.println("評価人数=" + numberOfReviewer + "人");
+				if (numberOfReviewer == 0) {
+					model.addRow(new String[] { String.format("%05d", rs2.getInt(1)),
+							rs2.getString(2), rs2.getString(3), rs2.getString(4), rs2.getString(5),
+							"0" });
+				} else {
+
+					model.addRow(new String[] { String.format("%05d", rs2.getInt(1)),
+							rs2.getString(2), rs2.getString(3), rs2.getString(4), rs2.getString(5),
+							String.valueOf(Integer.parseInt(rs2.getString(7)) / numberOfReviewer) });
+				}
+			}
+			TableColumn col1 = tcm.getColumn(1);
+			col1.setCellRenderer(new TextAreaCellRenderer());
+
+			TableColumn col2 = tcm.getColumn(2);
+			col2.setCellRenderer(new TextAreaCellRenderer());
+
+			TableColumn col4 = tcm.getColumn(4);
+			col4.setCellRenderer(new TextAreaCellRenderer());
+
+			rs.close();
+			rs1.close();
+			rs2.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		con.connectionClose();
+
 	}
 }
 
@@ -582,48 +697,47 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 		String addBookYearOfIssue = AddBookPanel.getAddBookYearOfIssueInputArea().getText();
 		String addBookGenre = (String) AddBookPanel.getAddBookGenreInputArea().getSelectedItem();
 
-		if(Validate.blankCheck(addBookTitle)==1000 || Validate.blankCheck(addBookAuthor)==1000
-				|| Validate.blankCheck(addBookYearOfIssue)==1000 || Validate.blankCheck(addBookGenre)==1000) {
+		if (Validate.blankCheck(addBookTitle) == 1000 || Validate.blankCheck(addBookAuthor) == 1000
+				|| Validate.blankCheck(addBookYearOfIssue) == 1000 || Validate.blankCheck(addBookGenre) == 1000) {
 			System.out.println("空欄があります");
-			
-		}else {
-		
-		Calendar preBookAddedDate;
-		preBookAddedDate = Calendar.getInstance();
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-		String bookAddedDate = sdf1.format(preBookAddedDate.getTime());
 
-		System.out.println("本のタイトルは" + addBookTitle);
-		System.out.println("本の著者は" + addBookAuthor);
-		System.out.println("本の発行年は" + addBookYearOfIssue);
-		System.out.println("本のジャンルは" + addBookGenre);
-		System.out.println("本の追加日は" + bookAddedDate);
+		} else {
 
-		String addBookshelfSQL = "insert into librarian.bookshelf(book_title,book_author,"
-				+ "book_publication,book_genre,book_added_date,number_of_rental,number_of_reviewer,number_of_star)"
-				+ "values('" + addBookTitle + "','" + addBookAuthor +
-				"','" + addBookYearOfIssue + "','" + addBookGenre + "','" + bookAddedDate + "',0,0,0)";
+			Calendar preBookAddedDate;
+			preBookAddedDate = Calendar.getInstance();
+			SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+			String bookAddedDate = sdf1.format(preBookAddedDate.getTime());
 
-		DBConnection con = new DBConnection();
-		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
-		System.out.println(con.getLoginUser_ID());
-		System.out.println(con.getLoginUser_PW());
+			System.out.println("本のタイトルは" + addBookTitle);
+			System.out.println("本の著者は" + addBookAuthor);
+			System.out.println("本の発行年は" + addBookYearOfIssue);
+			System.out.println("本のジャンルは" + addBookGenre);
+			System.out.println("本の追加日は" + bookAddedDate);
 
-		con.sendSQLtoDB(addBookshelfSQL);
-		try {
-			int num = con.getPreStatement().executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		con.connectionClose();
-		
+			String addBookshelfSQL = "insert into librarian.bookshelf(book_title,book_author,"
+					+ "book_publication,book_genre,book_added_date,number_of_rental,number_of_reviewer,number_of_star)"
+					+ "values('" + addBookTitle + "','" + addBookAuthor +
+					"','" + addBookYearOfIssue + "','" + addBookGenre + "','" + bookAddedDate + "',0,0,0)";
 
-		//プルダウンを更新するために、パネルを差し替える
-		LBWindow.cardPanel.remove(LBWindow.getAddBookP());
-		LBWindow.setAddBookP(new AddBookPanel());
-		LBWindow.cardPanel.add(LBWindow.getAddBookP(), "AddBookPanel");
-		LBWindow.layout.show(LBWindow.cardPanel, "AddBookPanel");
-		
+			DBConnection con = new DBConnection();
+			con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+			System.out.println(con.getLoginUser_ID());
+			System.out.println(con.getLoginUser_PW());
+
+			con.sendSQLtoDB(addBookshelfSQL);
+			try {
+				int num = con.getPreStatement().executeUpdate();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			con.connectionClose();
+
+			//プルダウンを更新するために、パネルを差し替える
+			LBWindow.cardPanel.remove(LBWindow.getAddBookP());
+			LBWindow.setAddBookP(new AddBookPanel());
+			LBWindow.cardPanel.add(LBWindow.getAddBookP(), "AddBookPanel");
+			LBWindow.layout.show(LBWindow.cardPanel, "AddBookPanel");
+
 		}
 	}
 
@@ -658,9 +772,9 @@ class returnBookButtonAction extends AbstractButtonAction {
 
 		System.out.println("借りた本のID=" + bookid + ",BBookID=" + b_bookid);
 		//貸出状態の確認
-		if (Validate.rentalStatusCheck( bookid) == 0) {
+		if (Validate.rentalStatusCheck(bookid) == 0) {
 			System.out.println("返却済みです");
-		} else if (Validate.rentalStatusCheck( bookid) == 1) {
+		} else if (Validate.rentalStatusCheck(bookid) == 1) {
 
 			DBConnection con = new DBConnection();
 			con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
@@ -709,10 +823,14 @@ class returnBookButtonAction extends AbstractButtonAction {
 				e.printStackTrace();
 			}
 			con.connectionClose();
+
+			LBWindow.cardPanel.remove(loginButtonAction.getReturnBookP());
+			loginButtonAction.setReturnBookP(new ReturnBookPanel());
+			LBWindow.cardPanel.add(loginButtonAction.getReturnBookP(), "ReturnBookPanel");
+			LBWindow.layout.show(LBWindow.cardPanel, "ReturnBookPanel");
 			con.selectBorrowBook();
 		}
-		
-		
+
 	}
 }
 
@@ -720,10 +838,81 @@ class returnBookButtonAction extends AbstractButtonAction {
 class freeWordSearchButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		buttonAction();
+
 	}
 
 	@Override
 	public void buttonAction() {
+		//入力された文字列の取得
+		String searchWord = FindBookPanel.getFreeWordSearchInputArea().getText();
+		if (Validate.blankCheck(searchWord) == 1000) {
+			System.out.println("何か入力するんだな");
+
+		} else {
+			String selectSqlFindBook = "select book_id,book_title,book_author,"
+					+ "book_publication,book_genre,book_added_date,number_of_reviewer,number_of_star "
+					+ "from librarian.bookshelf where concat(book_id,book_title,book_author,book_publication,"
+					+ "book_genre,book_added_date) like '%" + searchWord + "%'";
+			System.out.println(selectSqlFindBook);
+
+			DBConnection con = new DBConnection();
+			con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+			con.sendSQLtoDB(selectSqlFindBook);
+			DefaultTableModel model = (DefaultTableModel) FindBookPanel.getBookListDisplayTable().getModel();
+
+			TableColumnModel tcm = FindBookPanel.getBookListDisplayTable().getColumnModel();
+
+			//"みんなの評価"列に星評価を表示
+			TableColumn col6 = tcm.getColumn(6);
+			col6.setCellRenderer(new StarCellRenderer());
+
+			//レビューを見るボタンを表につける
+			OpenDisplayReviewPanelButton renderer = new OpenDisplayReviewPanelButton(
+					FindBookPanel.getBookListDisplayTable(), model);
+			TableColumn column7 = tcm.getColumn(7);
+			column7.setCellEditor(renderer);
+			column7.setCellRenderer(renderer);
+
+			model.setRowCount(0);
+			ResultSet rs;
+			try {
+				rs = con.getPreStatement().executeQuery();
+
+				while (rs.next()) {
+					int numberOfReviewer = Integer.parseInt(rs.getString(7));
+					System.out.println("評価人数=" + numberOfReviewer + "人");
+					if (numberOfReviewer == 0) {
+						model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+								rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+								rs.getString(6), "0" });
+					} else {
+
+						model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+								rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+								rs.getString(6),
+								String.valueOf(Integer.parseInt(rs.getString(8)) / numberOfReviewer) });
+					}
+				}
+				//文字列を折り返す
+				TableColumn col1 = tcm.getColumn(1);
+				col1.setCellRenderer(new TextAreaCellRenderer());
+
+				TableColumn col2 = tcm.getColumn(2);
+				col2.setCellRenderer(new TextAreaCellRenderer());
+
+				TableColumn col4 = tcm.getColumn(4);
+				col4.setCellRenderer(new TextAreaCellRenderer());
+
+				rs.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+			con.connectionClose();
+
+		}
+
 	}
 }
 
@@ -738,7 +927,7 @@ class allBookListDisplayButtonAction extends AbstractButtonAction {
 	public void buttonAction() {
 		DBConnection con = new DBConnection();
 		String selectAllBookSQL = "select book_id,book_title,book_author,"
-				+ "book_publication date,book_genre,book_added_date,number_of_reviewer,number_of_star from librarian.bookshelf";
+				+ "book_publication,book_genre,book_added_date,number_of_reviewer,number_of_star from librarian.bookshelf";
 		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 		con.sendSQLtoDB(selectAllBookSQL);
 		DefaultTableModel model = (DefaultTableModel) FindBookPanel.getBookListDisplayTable().getModel();
@@ -762,9 +951,9 @@ class allBookListDisplayButtonAction extends AbstractButtonAction {
 			rs = con.getPreStatement().executeQuery();
 
 			while (rs.next()) {
-				int NOR = Integer.parseInt(rs.getString(7));
-				System.out.println("評価人数=" + NOR + "人");
-				if (NOR == 0) {
+				int numberOfReviewer = Integer.parseInt(rs.getString(7));
+				System.out.println("評価人数=" + numberOfReviewer + "人");
+				if (numberOfReviewer == 0) {
 					model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
 							rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
 							rs.getString(6), "0" });
@@ -772,7 +961,7 @@ class allBookListDisplayButtonAction extends AbstractButtonAction {
 
 					model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
 							rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-							rs.getString(6), String.valueOf(Integer.parseInt(rs.getString(8)) / NOR) });
+							rs.getString(6), String.valueOf(Integer.parseInt(rs.getString(8)) / numberOfReviewer) });
 				}
 			}
 			//文字列を折り返す
