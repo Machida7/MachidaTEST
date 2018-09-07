@@ -10,11 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
-import test.JLabelMoveTEST;
 
 //各ボタンのアクションの抽象クラス
 public abstract class AbstractButtonAction implements ActionListener {
@@ -327,6 +326,8 @@ class PWChangeButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
+		  JOptionPane.showMessageDialog(LoginPanel.getChangePWP(), "JOptionPane");
+
 	}
 
 	@Override
@@ -337,6 +338,12 @@ class PWChangeButtonAction extends AbstractButtonAction {
 		String getPWAfterChange = LoginPanel.getChangePWP().getPWAfterChangeInputArea().getText();
 		System.out.println(getIDchangingPW);
 		System.out.println(getPWAfterChange);
+		
+		if(Validate.blankCheck(getIDchangingPW)==1000 || Validate.blankCheck(getPWAfterChange)==1000) {
+			System.out.println("入力しないとだぞ");
+		}else {
+		
+		
 		//MySQL上のユーザーのPWを変更
 		String changePWSQL = "alter user '" + getIDchangingPW
 				+ "'@'localhost' identified by '" + getPWAfterChange + "'";
@@ -361,6 +368,7 @@ class PWChangeButtonAction extends AbstractButtonAction {
 			e.printStackTrace();
 		}
 		con.connectionClose();
+		}
 	}
 }
 
@@ -394,6 +402,8 @@ class openFindBookPanelButtonAction extends AbstractButtonAction {
 
 //本を追加するボタン
 class openAddBookPanelButtonAction extends AbstractButtonAction {
+	
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		changePanel(e);
@@ -409,13 +419,12 @@ class openPlayWithWomanPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
-		changePanel(e);
 
 	}
 
 	@Override
 	public void buttonAction() {
-		new JLabelMoveTEST();
+		new WomanCatchGame("遊んであげる");
 	}
 }
 
@@ -687,7 +696,6 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
-
 	}
 
 	@Override

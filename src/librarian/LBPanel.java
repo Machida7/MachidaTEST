@@ -234,7 +234,9 @@ class LoginPanel extends LBPanel {
 		});
 		arrangeComponents(forgetPWHereLabel, 1, 4, 1, 1, 0, 0);
 
-		arrangeComponents(makeWoman(), 4, 1, 1, 5, 0, 0);
+		arrangeComponents(new MakeTimerLabel(), 1, 5, 2, 1, 0, 0.01);
+		
+		arrangeComponents(makeWoman(), 4, 1, 1,6, 0, 0);
 
 	}
 
@@ -433,7 +435,31 @@ class HomePanel extends LBPanel {
 				new returnLoginPanelFromHomeButtonAction(), "LoginPanel");
 		arrangeComponents(returnLoginPanelFromHomeButton, 1, 4, 1, 1, 0.1, 0.1);
 
-		arrangeComponents(makeWoman(), 2, 1, 1, 5, 0, 0);
+		Component womanLabel=makeWoman();
+		arrangeComponents(womanLabel, 2, 1, 1, 5, 0, 0);
+		womanLabel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseExited(MouseEvent e) {
+				Cursor c = Cursor.getDefaultCursor();
+				Component p = (Component) e.getSource();
+				p.setCursor(c);				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				Cursor c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+				Component p = (Component) e.getSource();
+				p.setCursor(c);		
+				
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					new WomanJump();
+				}
+			}
+		});
 
 
 
