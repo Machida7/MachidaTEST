@@ -21,7 +21,7 @@ public abstract class AbstractButtonAction implements ActionListener {
 
 	public void changePanel(ActionEvent event) {
 		String cmd = event.getActionCommand();
-		LBWindow.layout.show(LBWindow.cardPanel, cmd);
+		LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), cmd);
 	}
 }
 
@@ -100,6 +100,7 @@ class loginButtonAction extends AbstractButtonAction {
 
 		if(Validate.blankCheck(userID)==1000 || Validate.blankCheck(userPW)==1000) {
 			System.out.println("入力してぇ！");
+			Validate.showMessagePanel("入力", "空白ダメ");
 		}else {
 
 
@@ -166,10 +167,10 @@ class loginButtonAction extends AbstractButtonAction {
 		findBookP = new FindBookPanel();
 		womanRecommendationP = new WomanRecommendationPanel();
 
-		LBWindow.cardPanel.add(homeP, "HomePanel");
-		LBWindow.cardPanel.add(returnBookP, "ReturnBookPanel");
-		LBWindow.cardPanel.add(findBookP, "FindBookPanel");
-		LBWindow.cardPanel.add(womanRecommendationP, "WomanRecommendationPanel");
+		LBWindow.getCardPanel().add(homeP, "HomePanel");
+		LBWindow.getCardPanel().add(returnBookP, "ReturnBookPanel");
+		LBWindow.getCardPanel().add(findBookP, "FindBookPanel");
+		LBWindow.getCardPanel().add(womanRecommendationP, "WomanRecommendationPanel");
 		}
 	}
 
@@ -195,8 +196,8 @@ class openAddUserWindowButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		addNewUserP = new AddNewUserPanel();
-		LBWindow.contentPane.add(addNewUserP, BorderLayout.CENTER);
-		LBWindow.cardPanel.setVisible(false);
+		LBWindow.getLibrarianContentPane().add(addNewUserP, BorderLayout.CENTER);
+		LBWindow.getCardPanel().setVisible(false);
 	}
 
 	public static AddNewUserPanel getAddNewUserP() {
@@ -315,8 +316,8 @@ class returnLoginPanelFromAddNewUserButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.contentPane.remove(openAddUserWindowButtonAction.getAddNewUserP());
-		LBWindow.cardPanel.setVisible(true);
+		LBWindow.getLibrarianContentPane().remove(openAddUserWindowButtonAction.getAddNewUserP());
+		LBWindow.getCardPanel().setVisible(true);
 	}
 }
 
@@ -326,7 +327,7 @@ class PWChangeButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
-		  JOptionPane.showMessageDialog(LoginPanel.getChangePWP(), "JOptionPane");
+		  JOptionPane.showMessageDialog(LoginPanel.getChangePWP(), "パスワードを変更しました");
 
 	}
 
@@ -338,12 +339,12 @@ class PWChangeButtonAction extends AbstractButtonAction {
 		String getPWAfterChange = LoginPanel.getChangePWP().getPWAfterChangeInputArea().getText();
 		System.out.println(getIDchangingPW);
 		System.out.println(getPWAfterChange);
-		
+
 		if(Validate.blankCheck(getIDchangingPW)==1000 || Validate.blankCheck(getPWAfterChange)==1000) {
 			System.out.println("入力しないとだぞ");
 		}else {
-		
-		
+
+
 		//MySQL上のユーザーのPWを変更
 		String changePWSQL = "alter user '" + getIDchangingPW
 				+ "'@'localhost' identified by '" + getPWAfterChange + "'";
@@ -381,8 +382,8 @@ class returnLoginPanelFromPWChangeButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.contentPane.remove(LoginPanel.getChangePWP());
-		LBWindow.cardPanel.setVisible(true);
+		LBWindow.getLibrarianContentPane().remove(LoginPanel.getChangePWP());
+		LBWindow.getCardPanel().setVisible(true);
 	}
 }
 
@@ -402,8 +403,8 @@ class openFindBookPanelButtonAction extends AbstractButtonAction {
 
 //本を追加するボタン
 class openAddBookPanelButtonAction extends AbstractButtonAction {
-	
-	
+
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		changePanel(e);
@@ -424,7 +425,7 @@ class openPlayWithWomanPanelButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		new WomanCatchGame("遊んであげる");
+		new WomanCatchGame();
 	}
 }
 
@@ -649,8 +650,8 @@ class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 	public void buttonAction() {
 		//画面切り替え
 		womanRoomP = new WomanRoomPanel();
-		LBWindow.contentPane.add(womanRoomP, BorderLayout.CENTER);
-		LBWindow.cardPanel.setVisible(false);
+		LBWindow.getLibrarianContentPane().add(womanRoomP, BorderLayout.CENTER);
+		LBWindow.getCardPanel().setVisible(false);
 		con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
 
 		//ユーザーリストを表に表示
@@ -673,8 +674,8 @@ class returnHomePanalFromWomanRoomButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.contentPane.remove(openWomanRoomPanelButtonAction.womanRoomP);
-		LBWindow.cardPanel.setVisible(true);
+		LBWindow.getLibrarianContentPane().remove(openWomanRoomPanelButtonAction.womanRoomP);
+		LBWindow.getCardPanel().setVisible(true);
 	}
 }
 
@@ -741,10 +742,10 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 			con.connectionClose();
 
 			//プルダウンを更新するために、パネルを差し替える
-			LBWindow.cardPanel.remove(LBWindow.getAddBookP());
+			LBWindow.getCardPanel().remove(LBWindow.getAddBookP());
 			LBWindow.setAddBookP(new AddBookPanel());
-			LBWindow.cardPanel.add(LBWindow.getAddBookP(), "AddBookPanel");
-			LBWindow.layout.show(LBWindow.cardPanel, "AddBookPanel");
+			LBWindow.getCardPanel().add(LBWindow.getAddBookP(), "AddBookPanel");
+			LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), "AddBookPanel");
 
 		}
 	}
@@ -832,10 +833,10 @@ class returnBookButtonAction extends AbstractButtonAction {
 			}
 			con.connectionClose();
 
-			LBWindow.cardPanel.remove(loginButtonAction.getReturnBookP());
+			LBWindow.getCardPanel().remove(loginButtonAction.getReturnBookP());
 			loginButtonAction.setReturnBookP(new ReturnBookPanel());
-			LBWindow.cardPanel.add(loginButtonAction.getReturnBookP(), "ReturnBookPanel");
-			LBWindow.layout.show(LBWindow.cardPanel, "ReturnBookPanel");
+			LBWindow.getCardPanel().add(loginButtonAction.getReturnBookP(), "ReturnBookPanel");
+			LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), "ReturnBookPanel");
 			con.selectBorrowBook();
 		}
 
@@ -1101,7 +1102,7 @@ class openWriteReviewPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		writeReviewP = new WriteReviewPanel();
-		LBWindow.contentPane.add(writeReviewP, BorderLayout.CENTER);
+		LBWindow.getLibrarianContentPane().add(writeReviewP, BorderLayout.CENTER);
 		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(false);
 	}
 }
@@ -1116,8 +1117,8 @@ class returnPreviousPanelButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.contentPane.remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
-		LBWindow.cardPanel.setVisible(true);
+		LBWindow.getLibrarianContentPane().remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
+		LBWindow.getCardPanel().setVisible(true);
 	}
 }
 
@@ -1217,7 +1218,7 @@ class returnDisplayReviewPanelButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.contentPane.remove(openWriteReviewPanelButtonAction.getWriteReviewP());
+		LBWindow.getLibrarianContentPane().remove(openWriteReviewPanelButtonAction.getWriteReviewP());
 		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(true);
 	}
 }

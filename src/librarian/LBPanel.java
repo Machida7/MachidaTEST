@@ -225,8 +225,8 @@ class LoginPanel extends LBPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					ChangePWP = new ChangePWPanel();
-					LBWindow.contentPane.add(ChangePWP, BorderLayout.CENTER);
-					LBWindow.cardPanel.setVisible(false);
+					LBWindow.getLibrarianContentPane().add(ChangePWP, BorderLayout.CENTER);
+					LBWindow.getCardPanel().setVisible(false);
 
 				}
 			}
@@ -235,8 +235,8 @@ class LoginPanel extends LBPanel {
 		arrangeComponents(forgetPWHereLabel, 1, 4, 1, 1, 0, 0);
 
 		arrangeComponents(new MakeTimerLabel(), 1, 5, 2, 1, 0, 0.01);
-		
-		arrangeComponents(makeWoman(), 4, 1, 1,6, 0, 0);
+
+		arrangeComponents(makeWoman(), 4, 1, 1, 6, 0, 0);
 
 	}
 
@@ -271,8 +271,6 @@ class AddNewUserPanel extends LBPanel {
 		newUserPWInputArea.setFocusable(true);
 		newUserBirthdayInputArea.setFocusable(true);
 	}
-
-
 
 	public AddNewUserPanel() {
 		prepareGridBag();
@@ -435,24 +433,24 @@ class HomePanel extends LBPanel {
 				new returnLoginPanelFromHomeButtonAction(), "LoginPanel");
 		arrangeComponents(returnLoginPanelFromHomeButton, 1, 4, 1, 1, 0.1, 0.1);
 
-		Component womanLabel=makeWoman();
+		Component womanLabel = makeWoman();
 		arrangeComponents(womanLabel, 2, 1, 1, 5, 0, 0);
 		womanLabel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseExited(MouseEvent e) {
 				Cursor c = Cursor.getDefaultCursor();
 				Component p = (Component) e.getSource();
-				p.setCursor(c);				
+				p.setCursor(c);
 			}
-			
+
 			@Override
 			public void mouseEntered(MouseEvent e) {
 				Cursor c = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 				Component p = (Component) e.getSource();
-				p.setCursor(c);		
-				
+				p.setCursor(c);
+
 			}
-			
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
@@ -460,8 +458,6 @@ class HomePanel extends LBPanel {
 				}
 			}
 		});
-
-
 
 	}
 }
@@ -586,7 +582,7 @@ class ReturnBookPanel extends LBPanel {
 				numOfRead = rs.getInt(1);
 			}
 			if (numOfRead >= 1) {
-				message="<html>"+numOfRead+"冊読みました<html>";
+				message = "<html>" + numOfRead + "冊読みました<html>";
 				if (numOfRead >= 10) {
 					message += "<br>すごいですね！<html>";
 				} else if (numOfRead >= 5) {
@@ -608,7 +604,15 @@ class ReturnBookPanel extends LBPanel {
 
 		borrowedBookDisplayTable = new JTable();
 		borrowedBookDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "No", "タイトル", "借りた日", "返した日", "レビュー", "" }));
+				new String[] { "No", "タイトル", "借りた日", "返した日", "レビュー", "" }) {
+			public boolean isCellEditable(int row, int column) {
+				if (column == 4) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		});
 		borrowedBookDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		borrowedBookDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		borrowedBookDisplayTable.getColumn("タイトル").setPreferredWidth(750);
@@ -616,6 +620,9 @@ class ReturnBookPanel extends LBPanel {
 		borrowedBookDisplayTable.getColumn("").setPreferredWidth(0);
 		borrowedBookDisplayTable.setRowHeight(50);
 		borrowedBookDisplayTable.setAutoCreateRowSorter(true);
+		JTableHeader tableHeader = borrowedBookDisplayTable.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
+
 		TableColumnModel tcm = borrowedBookDisplayTable.getColumnModel();
 		//文字列を折り返す
 		TableColumn col1 = tcm.getColumn(1);
@@ -672,7 +679,6 @@ class FindBookPanel extends LBPanel {
 				} else {
 					return false;
 				}
-
 			}
 		});
 		bookListDisplayTable.setRowHeight(50);
@@ -685,6 +691,8 @@ class FindBookPanel extends LBPanel {
 		bookListDisplayTable.getColumn("レビュー").setPreferredWidth(100);
 		bookListDisplayTable.setAutoCreateRowSorter(true);
 		bookListDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		JTableHeader tableHeader = bookListDisplayTable.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
 
 		bookListDisplayTableScrollPane = new JScrollPane();
 		bookListDisplayTableScrollPane.setViewportView(bookListDisplayTable);
@@ -731,7 +739,15 @@ class WomanRecommendationPanel extends LBPanel {
 
 		RecommendationDisplayTable = new JTable();
 		RecommendationDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
-				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "みんなの評価", "レビュー" }));
+				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "みんなの評価", "レビュー" }) {
+			public boolean isCellEditable(int row, int column) {
+				if (column == 6) {
+					return true;
+				} else {
+					return false;
+				}
+			}
+		});
 		RecommendationDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		RecommendationDisplayTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		RecommendationDisplayTable.setRowHeight(50);
@@ -743,6 +759,8 @@ class WomanRecommendationPanel extends LBPanel {
 		RecommendationDisplayTable.getColumn("みんなの評価").setPreferredWidth(100);
 		RecommendationDisplayTable.getColumn("レビュー").setPreferredWidth(100);
 		RecommendationDisplayTable.setAutoCreateRowSorter(true);
+		JTableHeader tableHeader = RecommendationDisplayTable.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
 
 		RecommendationDisplayTableScrollPane = new JScrollPane();
 		RecommendationDisplayTableScrollPane.setViewportView(RecommendationDisplayTable);
@@ -1040,6 +1058,9 @@ class WomanRoomPanel extends LBPanel {
 		allBookListDisplayTable.setModel(new DefaultTableModel(new Object[][] {},
 				new String[] { "No", "タイトル", "著者名", "発行日", "ジャンル", "本の追加日" }));
 		allBookListDisplayTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		JTableHeader tableHeader = allBookListDisplayTable.getTableHeader();
+		tableHeader.setReorderingAllowed(false);
 
 		allBookListDisplayTableScrollPane = new JScrollPane();
 		allBookListDisplayTableScrollPane.setViewportView(allBookListDisplayTable);

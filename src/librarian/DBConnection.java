@@ -15,7 +15,7 @@ public class DBConnection {
 	private Connection conn = null;
 	private PreparedStatement preStatement = null;
 
-	private static ResultSet rs = null;
+	private  ResultSet rs = null;
 	private final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 	private final String DB_URL = "jdbc:mysql://localhost:3306?"
 			+ "characterEncoding=UTF-8&serverTimezone=JST&useSSL=false"
@@ -60,7 +60,8 @@ public class DBConnection {
 			Class.forName(DB_DRIVER);
 			conn = DriverManager.getConnection(DB_URL, ID, PW);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
+			
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -148,12 +149,12 @@ public class DBConnection {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		
-		
+
+
 	}
-	
+
 	public void selectBorrowBook() {
-		
+
 		//借りた本を表に表示
 		String selectBorrowSQL = "select borrowed_book_id,borrowed_date,return_date,borrowed_book_title,b_book_id from "
 				+ "librarian.borrowed_book where borrower='" + getLoginUser_ID() + "'";
@@ -197,7 +198,7 @@ public class DBConnection {
 
 		connectionClose();
 	}
-		
+
 	}
 
 

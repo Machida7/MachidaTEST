@@ -111,8 +111,8 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 
 				displayReviewP = new DisplayReviewPanel();
 
-				LBWindow.contentPane.add(displayReviewP, BorderLayout.CENTER);
-				LBWindow.cardPanel.setVisible(false);
+				LBWindow.getLibrarianContentPane().add(displayReviewP, BorderLayout.CENTER);
+				LBWindow.getCardPanel().setVisible(false);
 				DBConnection con = new DBConnection();
 				con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 
@@ -174,7 +174,7 @@ class StarCellRenderer extends JTextArea implements TableCellRenderer {
 		} else if (value.equals("5")) {
 			setText("★★★★★");
 		} else if (value.equals("0")){
-			setText("(´◉◞౪◟◉)");
+			setText("レビュー0件");
 		}
 
 		return this;

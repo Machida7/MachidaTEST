@@ -12,9 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class LBWindow extends JFrame {
-	static JPanel cardPanel;
-	static CardLayout layout;
-	static Container contentPane;
+	private static JPanel cardPanel;
+	private static CardLayout cardPanelLayout;
+	private static Container librarianContentPane;
 
 	private static AddBookPanel addBookP;
 
@@ -26,29 +26,24 @@ public class LBWindow extends JFrame {
 		return addBookP;
 	}
 
-	//テスト用
-	public LBWindow(JPanel panel) {
-		contentPane = getContentPane();
-		contentPane.add(panel, BorderLayout.CENTER);
-		makeWindow("TEST");
-	}
+
 
 	public LBWindow(String _windowName) {
-		cardPanel = new JPanel();
-		layout = new CardLayout();
-		cardPanel.setLayout(layout);
+		cardPanel=new JPanel();
+		cardPanelLayout=new CardLayout();
+		getCardPanel().setLayout(getCardPanelLayout());
 
 		addBookP = new AddBookPanel();
 
-		cardPanel.add(new LoginPanel(), "LoginPanel");
+		getCardPanel().add(new LoginPanel(), "LoginPanel");
 
-		cardPanel.add(addBookP, "AddBookPanel");
+		getCardPanel().add(addBookP, "AddBookPanel");
 
-		contentPane = getContentPane();
-		contentPane.add(cardPanel, BorderLayout.CENTER);
-		
-		
-		
+		librarianContentPane=getContentPane();
+		getLibrarianContentPane().add(getCardPanel(), BorderLayout.CENTER);
+
+
+
 		makeWindow(_windowName);
 	}
 
@@ -66,6 +61,23 @@ public class LBWindow extends JFrame {
 		this.setVisible(true);
 
 	}
+
+	public static JPanel getCardPanel() {
+		return cardPanel;
+	}
+
+	public static CardLayout getCardPanelLayout() {
+		return cardPanelLayout;
+	}
+
+
+
+	public static Container getLibrarianContentPane() {
+		return librarianContentPane;
+	}
+
+
+
 
 }
 
