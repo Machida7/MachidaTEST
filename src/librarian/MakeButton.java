@@ -111,8 +111,8 @@ class OpenDisplayReviewPanelButton extends AbstractCellEditor implements TableCe
 
 				displayReviewP = new DisplayReviewPanel();
 
-				LBWindow.getLibrarianContentPane().add(displayReviewP, BorderLayout.CENTER);
-				LBWindow.getCardPanel().setVisible(false);
+				RunLibrarian.getLibrarianContentPane().add(displayReviewP, BorderLayout.CENTER);
+				RunLibrarian.getCardPanel().setVisible(false);
 				DBConnection con = new DBConnection();
 				con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 

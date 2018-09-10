@@ -225,8 +225,8 @@ class LoginPanel extends LBPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					ChangePWP = new ChangePWPanel();
-					LBWindow.getLibrarianContentPane().add(ChangePWP, BorderLayout.CENTER);
-					LBWindow.getCardPanel().setVisible(false);
+					RunLibrarian.getLibrarianContentPane().add(ChangePWP, BorderLayout.CENTER);
+					RunLibrarian.getCardPanel().setVisible(false);
 
 				}
 			}
@@ -396,6 +396,8 @@ class HomePanel extends LBPanel {
 			specialMessage = "お久しぶりですね、お元気でしたか？";
 		} else if (dayDiff >= 4) {
 			specialMessage = "今日は何するんだ？";
+		}else if(dayDiff>=2) {
+			specialMessage = "毎日来てよ！";
 		} else if (dayDiff == 1) {
 			specialMessage = "今日も来てくれたんですね";
 		} else if (dayDiff == 0) {
@@ -496,7 +498,7 @@ class AddBookPanel extends LBPanel {
 		arrangeComponents(new MakeLabel("<html>新しい本があるのね。"
 				+ "<br>どんな本ですか？<html>"), 0, 0, 2, 1, 1, 1);
 
-		String[] labelName = { "タイトル", "著者名", "発行年", "ジャンル" };
+		String[] labelName = { "タイトル", "著者名", "発行年(例 19900101)", "ジャンル(20文字以内or選択してね)" };
 		int labelFontSize = 17;
 		int i = 1;
 		for (String str : labelName) {
@@ -588,12 +590,12 @@ class ReturnBookPanel extends LBPanel {
 				} else if (numOfRead >= 5) {
 					message = "<br>読書はいいことです<html>";
 				} else if (numOfRead >= 3) {
-					message = "<br>たくさん読んでね！<html>";
+					message = "<br>たくさん読んでね！良かったらおすすめを見てね！<html>";
 				} else if (numOfRead >= 1) {
 					message = "<br>本を読む人は好きですYO<html>";
 				}
 			} else if (numOfRead == 0) {
-				message = "<html>本を読め<br>おすすめ見ろ<html>";
+				message = "<html>さあ本を読むのです<br>よかったらおすすめを見てください<html>";
 			}
 
 		} catch (SQLException e) {

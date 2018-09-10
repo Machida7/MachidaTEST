@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class LBWindow extends JFrame {
+public class RunLibrarian extends JFrame {
 	private static JPanel cardPanel;
 	private static CardLayout cardPanelLayout;
 	private static Container librarianContentPane;
@@ -19,7 +19,7 @@ public class LBWindow extends JFrame {
 	private static AddBookPanel addBookP;
 
 	public static void setAddBookP(AddBookPanel addBookP) {
-		LBWindow.addBookP = addBookP;
+		RunLibrarian.addBookP = addBookP;
 	}
 
 	public static AddBookPanel getAddBookP() {
@@ -28,7 +28,7 @@ public class LBWindow extends JFrame {
 
 
 
-	public LBWindow(String _windowName) {
+	public RunLibrarian(String _windowName) {
 		cardPanel=new JPanel();
 		cardPanelLayout=new CardLayout();
 		getCardPanel().setLayout(getCardPanelLayout());
@@ -48,7 +48,7 @@ public class LBWindow extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		new LBWindow("ようこそ！");
+		new RunLibrarian("ようこそ！");
 	}
 
 	public void makeWindow(String _windowName) {

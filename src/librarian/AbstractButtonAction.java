@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -21,7 +21,7 @@ public abstract class AbstractButtonAction implements ActionListener {
 
 	public void changePanel(ActionEvent event) {
 		String cmd = event.getActionCommand();
-		LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), cmd);
+		RunLibrarian.getCardPanelLayout().show(RunLibrarian.getCardPanel(), cmd);
 	}
 }
 
@@ -92,18 +92,9 @@ class loginButtonAction extends AbstractButtonAction {
 		loginButtonAction.loginDateTo = loginDateTo;
 	}
 
-	@Override
-	public void buttonAction() {
+	public void buttonAction(String userID, String userPW) {
+
 		DBConnection con = new DBConnection();
-		String userID = LoginPanel.getIDinputArea().getText();
-		String userPW = new String(LoginPanel.getPWinputArea().getPassword());
-
-		if(Validate.blankCheck(userID)==1000 || Validate.blankCheck(userPW)==1000) {
-			System.out.println("入力してぇ！");
-			Validate.showMessagePanel("入力", "空白ダメ");
-		}else {
-
-
 		con.setLoginUser_ID(userID);
 		con.setLoginUser_PW(userPW);
 
@@ -127,7 +118,8 @@ class loginButtonAction extends AbstractButtonAction {
 			}
 			rs.close();
 		} catch (SQLException e2) {
-			e2.printStackTrace();
+			System.out.println("e2");
+			System.out.println(e2.getMessage());
 		}
 		setLoginUserName(userName);
 
@@ -138,7 +130,7 @@ class loginButtonAction extends AbstractButtonAction {
 		try {
 			setLoginDateFrom(sdf.parse(preLoginDateFrom));
 		} catch (ParseException e1) {
-			e1.printStackTrace();
+			System.out.println(e1.getMessage());
 		}
 		System.out.println("セットした前ログ日" + loginButtonAction.getLoginDateFrom());
 
@@ -150,7 +142,7 @@ class loginButtonAction extends AbstractButtonAction {
 		try {
 			setLoginDateTo(sdf.parse(userLoginDate));
 		} catch (ParseException e1) {
-			e1.printStackTrace();
+			System.out.println(e1.getMessage());
 		}
 		String updateLoginDateSQL = "update librarian.user_list set last_login_date='" +
 				userLoginDate + "' where user_id='" + con.getLoginUser_ID() + "'";
@@ -158,7 +150,7 @@ class loginButtonAction extends AbstractButtonAction {
 		try {
 			int num = con.getPreStatement().executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 		con.connectionClose();
 
@@ -167,20 +159,37 @@ class loginButtonAction extends AbstractButtonAction {
 		findBookP = new FindBookPanel();
 		womanRecommendationP = new WomanRecommendationPanel();
 
-		LBWindow.getCardPanel().add(homeP, "HomePanel");
-		LBWindow.getCardPanel().add(returnBookP, "ReturnBookPanel");
-		LBWindow.getCardPanel().add(findBookP, "FindBookPanel");
-		LBWindow.getCardPanel().add(womanRecommendationP, "WomanRecommendationPanel");
-		}
+		RunLibrarian.getCardPanel().add(homeP, "HomePanel");
+		RunLibrarian.getCardPanel().add(returnBookP, "ReturnBookPanel");
+		RunLibrarian.getCardPanel().add(findBookP, "FindBookPanel");
+		RunLibrarian.getCardPanel().add(womanRecommendationP, "WomanRecommendationPanel");
+		userID = null;
+		userPW = null;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		buttonAction();
-		changePanel(e);
+		String userID = LoginPanel.getIDinputArea().getText();
+		String userPW = new String(LoginPanel.getPWinputArea().getPassword());
 
+		if (Validate.blankCheck(userID) == 1000 || Validate.blankCheck(userPW) == 1000) {
+			System.out.println("入力して！");
+			Validate.outputErrorMessage(1000);
+		} else if (Validate.loginCheck(userID, userPW) == 2000) {
+			Validate.outputErrorMessage(2000);
+		} else {
+			buttonAction(userID, userPW);
+			changePanel(e);
+		}
 		LoginPanel.getIDinputArea().setText("");
 		LoginPanel.getPWinputArea().setText("");
+
+	}
+
+	@Override
+	public void buttonAction() {
+		// TODO 自動生成されたメソッド・スタブ
+
 	}
 }
 
@@ -196,8 +205,8 @@ class openAddUserWindowButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		addNewUserP = new AddNewUserPanel();
-		LBWindow.getLibrarianContentPane().add(addNewUserP, BorderLayout.CENTER);
-		LBWindow.getCardPanel().setVisible(false);
+		RunLibrarian.getLibrarianContentPane().add(addNewUserP, BorderLayout.CENTER);
+		RunLibrarian.getCardPanel().setVisible(false);
 	}
 
 	public static AddNewUserPanel getAddNewUserP() {
@@ -214,99 +223,114 @@ class addNewUserButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		String newUserID= openAddUserWindowButtonAction.getAddNewUserP().getNewUserIDInputArea().getText();
-		String newUserPW= openAddUserWindowButtonAction.getAddNewUserP().getNewUserPWInputArea().getText();
-		String newUserName= openAddUserWindowButtonAction.getAddNewUserP().getNewUserNameInputArea().getText();
-		String newUserBirthday= openAddUserWindowButtonAction.getAddNewUserP().getNewUserBirthdayInputArea().getText();
+		String newUserID = openAddUserWindowButtonAction.getAddNewUserP().getNewUserIDInputArea().getText();
+		String newUserPW = openAddUserWindowButtonAction.getAddNewUserP().getNewUserPWInputArea().getText();
+		String newUserName = openAddUserWindowButtonAction.getAddNewUserP().getNewUserNameInputArea().getText();
+		String newUserBirthday = openAddUserWindowButtonAction.getAddNewUserP().getNewUserBirthdayInputArea().getText();
 
-		if( newUserID.equals("20文字まで") || newUserPW.equals("半角英数字16文字まで") ||
-				newUserName.equals("半角英数字16文字まで") || newUserBirthday.equals("例：19990101") || Validate.blankCheck(newUserID)==1000 ||Validate.blankCheck(newUserPW)==1000
-				||Validate.blankCheck(newUserName)==1000 ||Validate.blankCheck(newUserBirthday)==1000 ) {
-			System.out.println("入力するのだ");
-		}else {
+		//空白チェック
+		if (newUserID.equals("20文字まで") || newUserPW.equals("半角英数字16文字まで") ||
+				newUserName.equals("半角英数字16文字まで") || newUserBirthday.equals("例：19990101")
+				|| Validate.blankCheck(newUserID) == 1000 || Validate.blankCheck(newUserPW) == 1000
+				|| Validate.blankCheck(newUserName) == 1000 || Validate.blankCheck(newUserBirthday) == 1000) {
+			Validate.outputErrorMessage(1000);
+			//文字数チェック
+		} else if (Validate.wordCountCheck(newUserID, 16) == 1010 || Validate.wordCountCheck(newUserPW, 16) == 1010
+				|| Validate.wordCountCheck(newUserName, 20) == 1010
+				|| Validate.wordCountCheck(newUserBirthday, 8) == 1010) {
+			Validate.outputErrorMessage(1010);
+			//半角英数字のみチェック
+		} else if (Validate.onlyHalfSizeCharaCheck(newUserID) == 1020
+				|| Validate.onlyHalfSizeCharaCheck(newUserPW) == 1020) {
+			Validate.outputErrorMessage(1020);
+			//正しい日付かチェック
+		} else if (Validate.dateCheck(newUserBirthday) == 1030) {
+			Validate.outputErrorMessage(1030);
+			//ユーザーID重複チェック
+		} else if (Validate.userIDOverlapCheck(newUserID) == 2010) {
+			Validate.outputErrorMessage(2010);
 
+		} else {
 
-		//コンポジション
-		DBConnection con = new DBConnection();
-		//CREATE USER
-		con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
-		String createUserSqlStatement = "CREATE USER '" + newUserID + "'@localhost identified by '" + newUserPW + "'";
-		con.sendSQLtoDB(createUserSqlStatement);
-		try {
-			boolean num = con.getPreStatement().execute();
-			System.out.println("ユーザー作成完了　ID:" + newUserID + "  PW:" + newUserPW);
+			//コンポジション
+			DBConnection con = new DBConnection();
+			//CREATE USER
+			con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
+			String createUserSqlStatement = "CREATE USER '" + newUserID + "'@localhost identified by '" + newUserPW
+					+ "'";
+			con.sendSQLtoDB(createUserSqlStatement);
+			try {
+				boolean num = con.getPreStatement().execute();
+				System.out.println("ユーザー作成完了　ID:" + newUserID + "  PW:" + newUserPW);
 
-			/*ユーザー作成成功したか確認
-			String selectUser = "select user,host from mysql.user";
-			con.sendSQLtoDB(selectUser);
-			ResultSet rs = con.preStatement.executeQuery();
-			String user = null;
-			while (rs.next()) {
-				user = rs.getString("user");
-				System.out.println(user);
+				/*ユーザー作成成功したか確認
+				String selectUser = "select user,host from mysql.user";
+				con.sendSQLtoDB(selectUser);
+				ResultSet rs = con.preStatement.executeQuery();
+				String user = null;
+				while (rs.next()) {
+					user = rs.getString("user");
+					System.out.println(user);
+				}
+				rs.close();
+				ここまで確認
+				*/
+
+				//user_listに新規ユーザーを追加
+
+				/*
+				Date UserBirthday = null;
+				//誕生日のString→Date
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
+				try {
+					UserBirthday = sdf.parse(openAddUserWindowButtonAction.addNewUserP.getNewUserBirthdayInputArea().getText());
+				} catch (ParseException e) {
+								System.out.println(e.getMessage());
+				}
+				//誕生日のDate型→String型
+				SimpleDateFormat sdf1 = new SimpleDateFormat("yyyymmdd");
+				String birthday = sdf1.format(UserBirthday);
+				System.out.println("誕生日は"+birthday);
+				*/
+
+				//確認用
+				System.out.println("Nameは" + newUserName);
+				System.out.println("IDは" + newUserID);
+				System.out.println("PWは" + newUserPW);
+				System.out.println("誕生日は" + newUserBirthday);
+				//ここまで確認用
+
+				//ユーザー作成日
+				Calendar preUserAddedDate;
+				preUserAddedDate = Calendar.getInstance();
+				SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
+				String userAddedDate = sdf1.format(preUserAddedDate.getTime());
+				//DBに登録
+				String addUser_listSQL = "insert into librarian.user_list(user_name,user_id,"
+						+ "user_pw,birthday,user_added_date,last_login_date,number_of_read"
+						+ ")values('" + newUserName + "','" + newUserID +
+						"','" + newUserPW + "','" + newUserBirthday + "','" + userAddedDate + "','99991231',0)";
+				con.sendSQLtoDB(addUser_listSQL);
+
+				int num1 = con.getPreStatement().executeUpdate();
+
+				//権限付与
+				String grantSQL = "grant insert,select,update,select on librarian.* to '"
+						+ newUserID + "'@'localhost'";
+				con.sendSQLtoDB(grantSQL);
+				int num2 = con.getPreStatement().executeUpdate();
+				System.out.println(newUserName + "に権限が付与されました");
+
+				con.connectionClose();
+			} catch (SQLException e) {
+				System.out.println(e.getMessage());
 			}
-			rs.close();
-			ここまで確認
-			*/
+			//パネルを表示
 
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
-
-		//user_listに新規ユーザーを追加
-
-		/*
-		Date UserBirthday = null;
-		//誕生日のString→Date
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyymmdd");
-		try {
-			UserBirthday = sdf.parse(openAddUserWindowButtonAction.addNewUserP.getNewUserBirthdayInputArea().getText());
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		//誕生日のDate型→String型
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyymmdd");
-		String birthday = sdf1.format(UserBirthday);
-		System.out.println("誕生日は"+birthday);
-		*/
-
-		//確認用
-		System.out.println("Nameは" + newUserName);
-		System.out.println("IDは" + newUserID);
-		System.out.println("PWは" + newUserPW);
-		System.out.println("誕生日は" + newUserBirthday);
-		//ここまで確認用
-
-		//ユーザー作成日
-		Calendar preUserAddedDate;
-		preUserAddedDate = Calendar.getInstance();
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMdd");
-		String userAddedDate = sdf1.format(preUserAddedDate.getTime());
-		//DBに登録
-		String addUser_listSQL = "insert into librarian.user_list(user_name,user_id,"
-				+ "user_pw,birthday,user_added_date,last_login_date,number_of_read"
-				+ ")values('" + newUserName + "','" + newUserID +
-				"','" + newUserPW + "','" + newUserBirthday + "','" + userAddedDate + "','99991231',0)";
-		con.sendSQLtoDB(addUser_listSQL);
-		try {
-			int num = con.getPreStatement().executeUpdate();
-
-			//権限付与
-			String grantSQL = "grant insert,select,update,select on librarian.* to '"
-					+ newUserID + "'@'localhost'";
-			con.sendSQLtoDB(grantSQL);
-			int num1 = con.getPreStatement().executeUpdate();
-			System.out.println(newUserName + "に権限が付与されました");
-
-			con.connectionClose();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		//パネルを表示
-
 	}
 }
-}
+
 //新規ユーザー登録画面からログイン画面に戻るボタン
 class returnLoginPanelFromAddNewUserButtonAction extends AbstractButtonAction {
 	@Override
@@ -316,8 +340,8 @@ class returnLoginPanelFromAddNewUserButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.getLibrarianContentPane().remove(openAddUserWindowButtonAction.getAddNewUserP());
-		LBWindow.getCardPanel().setVisible(true);
+		RunLibrarian.getLibrarianContentPane().remove(openAddUserWindowButtonAction.getAddNewUserP());
+		RunLibrarian.getCardPanel().setVisible(true);
 	}
 }
 
@@ -327,7 +351,6 @@ class PWChangeButtonAction extends AbstractButtonAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		buttonAction();
-		  JOptionPane.showMessageDialog(LoginPanel.getChangePWP(), "パスワードを変更しました");
 
 	}
 
@@ -340,35 +363,45 @@ class PWChangeButtonAction extends AbstractButtonAction {
 		System.out.println(getIDchangingPW);
 		System.out.println(getPWAfterChange);
 
-		if(Validate.blankCheck(getIDchangingPW)==1000 || Validate.blankCheck(getPWAfterChange)==1000) {
-			System.out.println("入力しないとだぞ");
-		}else {
+		//空白チェック
+		if (Validate.blankCheck(getIDchangingPW) == 1000 || Validate.blankCheck(getPWAfterChange) == 1000) {
+			Validate.outputErrorMessage(1000);
+			//ユーザーID存在チェック
+		} else if (Validate.userIDOverlapCheck(getIDchangingPW) == 0) {
+			Validate.outputErrorMessage(2020);
+			//PW文字数チェック
+		} else if (Validate.wordCountCheck(getPWAfterChange, 16) == 1010) {
+			Validate.outputErrorMessage(1010);
+			//PW半角のみチェック
+		} else if (Validate.onlyHalfSizeCharaCheck(getPWAfterChange) == 1020) {
+			Validate.outputErrorMessage(1020);
 
+		} else {
 
-		//MySQL上のユーザーのPWを変更
-		String changePWSQL = "alter user '" + getIDchangingPW
-				+ "'@'localhost' identified by '" + getPWAfterChange + "'";
-		DBConnection con = new DBConnection();
-		con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
+			//MySQL上のユーザーのPWを変更
+			String changePWSQL = "alter user '" + getIDchangingPW
+					+ "'@'localhost' identified by '" + getPWAfterChange + "'";
+			DBConnection con = new DBConnection();
+			con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
 
-		con.sendSQLtoDB(changePWSQL);
-		try {
-			int num = con.getPreStatement().executeUpdate();
-			System.out.println(getIDchangingPW + "のPWは" + getPWAfterChange + "に変更されました。");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		//user_list上のuser_pwを変更
-		String changeUser_pwSQL = "update librarian.user_list set user_pw='" + getPWAfterChange + "' where user_id='"
-				+ getIDchangingPW + "'";
-		con.sendSQLtoDB(changeUser_pwSQL);
-		try {
-			int num = con.getPreStatement().executeUpdate();
-			System.out.println("user_listのpwを変更しました。");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		con.connectionClose();
+			con.sendSQLtoDB(changePWSQL);
+			try {
+				int num = con.getPreStatement().executeUpdate();
+				System.out.println(getIDchangingPW + "のPWは" + getPWAfterChange + "に変更されました。");
+
+				//user_list上のuser_pwを変更
+				String changeUser_pwSQL = "update librarian.user_list set user_pw='" + getPWAfterChange
+						+ "' where user_id='"
+						+ getIDchangingPW + "'";
+				con.sendSQLtoDB(changeUser_pwSQL);
+				int num1 = con.getPreStatement().executeUpdate();
+				System.out.println("user_listのpwを変更しました。");
+				Validate.showMessagePanel("パスワード変更完了", "パスワードを変更しました");
+
+			} catch (SQLException e) {
+				System.out.println(e.getMessage());
+			}
+			con.connectionClose();
 		}
 	}
 }
@@ -382,8 +415,8 @@ class returnLoginPanelFromPWChangeButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.getLibrarianContentPane().remove(LoginPanel.getChangePWP());
-		LBWindow.getCardPanel().setVisible(true);
+		RunLibrarian.getLibrarianContentPane().remove(LoginPanel.getChangePWP());
+		RunLibrarian.getCardPanel().setVisible(true);
 	}
 }
 
@@ -403,7 +436,6 @@ class openFindBookPanelButtonAction extends AbstractButtonAction {
 
 //本を追加するボタン
 class openAddBookPanelButtonAction extends AbstractButtonAction {
-
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -511,7 +543,7 @@ class openWomanRecommendationPanelButtonAction extends AbstractButtonAction {
 
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 		con.connectionClose();
@@ -621,7 +653,7 @@ class otherRecommendationDisplayButtonAction extends AbstractButtonAction {
 			rs1.close();
 			rs2.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 		con.connectionClose();
 
@@ -643,6 +675,7 @@ class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 		} else {
 			//管理者でないなら
 			System.out.println("あなたはダメです");
+			Validate.showMessagePanel("秘密", "決して覗いてはいけません");
 		}
 	}
 
@@ -650,8 +683,8 @@ class openWomanRoomPanelButtonAction extends AbstractButtonAction {
 	public void buttonAction() {
 		//画面切り替え
 		womanRoomP = new WomanRoomPanel();
-		LBWindow.getLibrarianContentPane().add(womanRoomP, BorderLayout.CENTER);
-		LBWindow.getCardPanel().setVisible(false);
+		RunLibrarian.getLibrarianContentPane().add(womanRoomP, BorderLayout.CENTER);
+		RunLibrarian.getCardPanel().setVisible(false);
 		con.dbConnection(con.getAdministrator_ID(), con.getAdministrator_PW());
 
 		//ユーザーリストを表に表示
@@ -674,8 +707,8 @@ class returnHomePanalFromWomanRoomButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.getLibrarianContentPane().remove(openWomanRoomPanelButtonAction.womanRoomP);
-		LBWindow.getCardPanel().setVisible(true);
+		RunLibrarian.getLibrarianContentPane().remove(openWomanRoomPanelButtonAction.womanRoomP);
+		RunLibrarian.getCardPanel().setVisible(true);
 	}
 }
 
@@ -689,6 +722,9 @@ class returnLoginPanelFromHomeButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
+		DBConnection con = new DBConnection();
+		con.setLoginUser_ID(null);
+		con.setLoginUser_PW(null);
 	}
 }
 
@@ -705,10 +741,18 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 		String addBookAuthor = AddBookPanel.getAddBookAuthorInputArea().getText();
 		String addBookYearOfIssue = AddBookPanel.getAddBookYearOfIssueInputArea().getText();
 		String addBookGenre = (String) AddBookPanel.getAddBookGenreInputArea().getSelectedItem();
-
+		//空白チェック
 		if (Validate.blankCheck(addBookTitle) == 1000 || Validate.blankCheck(addBookAuthor) == 1000
 				|| Validate.blankCheck(addBookYearOfIssue) == 1000 || Validate.blankCheck(addBookGenre) == 1000) {
-			System.out.println("空欄があります");
+			Validate.outputErrorMessage(1000);
+			//文字数チェック
+		} else if (Validate.wordCountCheck(addBookGenre, 20) == 1010
+				|| Validate.wordCountCheck(addBookTitle, 400) == 1010
+				|| Validate.wordCountCheck(addBookAuthor, 650) == 1010) {
+			Validate.outputErrorMessage(1010);
+			//正しい日付かチェック
+		} else if (Validate.dateCheck(addBookYearOfIssue) == 1030) {
+			Validate.outputErrorMessage(1030);
 
 		} else {
 
@@ -737,15 +781,15 @@ class addBookToDBButtonAction extends AbstractButtonAction {
 			try {
 				int num = con.getPreStatement().executeUpdate();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 			con.connectionClose();
 
 			//プルダウンを更新するために、パネルを差し替える
-			LBWindow.getCardPanel().remove(LBWindow.getAddBookP());
-			LBWindow.setAddBookP(new AddBookPanel());
-			LBWindow.getCardPanel().add(LBWindow.getAddBookP(), "AddBookPanel");
-			LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), "AddBookPanel");
+			RunLibrarian.getCardPanel().remove(RunLibrarian.getAddBookP());
+			RunLibrarian.setAddBookP(new AddBookPanel());
+			RunLibrarian.getCardPanel().add(RunLibrarian.getAddBookP(), "AddBookPanel");
+			RunLibrarian.getCardPanelLayout().show(RunLibrarian.getCardPanel(), "AddBookPanel");
 
 		}
 	}
@@ -776,70 +820,78 @@ class returnBookButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		int row = ReturnBookPanel.getBorrowedBookDisplayTable().getSelectedRow();
-		Object bookid = ReturnBookPanel.getBorrowedBookDisplayTable().getValueAt(row, 0);
-		Object b_bookid = ReturnBookPanel.getBorrowedBookDisplayTable().getValueAt(row, 5);
+		System.out.println(row + "行目");
+		//本が選択されているかチェック
+		if (row < 0) {
+			Validate.outputErrorMessage(1050);
+		} else {
 
-		System.out.println("借りた本のID=" + bookid + ",BBookID=" + b_bookid);
-		//貸出状態の確認
-		if (Validate.rentalStatusCheck(bookid) == 0) {
-			System.out.println("返却済みです");
-		} else if (Validate.rentalStatusCheck(bookid) == 1) {
+			Object bookid = ReturnBookPanel.getBorrowedBookDisplayTable().getValueAt(row, 0);
+			Object b_bookid = ReturnBookPanel.getBorrowedBookDisplayTable().getValueAt(row, 5);
 
-			DBConnection con = new DBConnection();
-			con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
+			System.out.println("借りた本のID=" + bookid + ",BBookID=" + b_bookid);
+			//貸出状態の確認
+			if (Validate.rentalStatusCheck(bookid) == 0) {
+				Validate.outputErrorMessage(2030);
+				System.out.println("返却済みです");
+			} else if (Validate.rentalStatusCheck(bookid) == 1) {
 
-			try {
-				//bookshelfに対しての処理
-				//貸出状態、借りている人の変更
-				String updateSQLtoBookshelf = "update librarian.bookshelf set rental_status=0,borrowed_now=null "
-						+ "where book_id='" + bookid + "'";
-				con.sendSQLtoDB(updateSQLtoBookshelf);
-				int num = con.getPreStatement().executeUpdate();
-				System.out.println("bookshelfへの返却処理完了");
+				DBConnection con = new DBConnection();
+				con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
 
-				//user_listに対しての処理
-				//読んだ本の冊数の取得→+1
-				String selectNORead = "select number_of_read from librarian.user_list where user_id='"
-						+ con.getLoginUser_ID() + "'";
-				con.sendSQLtoDB(selectNORead);
-				ResultSet rs = con.getPreStatement().executeQuery();
-				int NunOfRead = 0;
-				while (rs.next()) {
-					NunOfRead = rs.getInt(1);
+				try {
+					//bookshelfに対しての処理
+					//貸出状態、借りている人の変更
+					String updateSQLtoBookshelf = "update librarian.bookshelf set rental_status=0,borrowed_now=null "
+							+ "where book_id='" + bookid + "'";
+					con.sendSQLtoDB(updateSQLtoBookshelf);
+					int num = con.getPreStatement().executeUpdate();
+					System.out.println("bookshelfへの返却処理完了");
+
+					//user_listに対しての処理
+					//読んだ本の冊数の取得→+1
+					String selectNORead = "select number_of_read from librarian.user_list where user_id='"
+							+ con.getLoginUser_ID() + "'";
+					con.sendSQLtoDB(selectNORead);
+					ResultSet rs = con.getPreStatement().executeQuery();
+					int NunOfRead = 0;
+					while (rs.next()) {
+						NunOfRead = rs.getInt(1);
+					}
+					NunOfRead++;
+					//update 読んだ本の冊数
+					String updateSQLtoUser_list = "update librarian.user_list set number_of_read='" + NunOfRead + "' "
+							+ "where user_id='" + con.getLoginUser_ID() + "'";
+					con.sendSQLtoDB(updateSQLtoUser_list);
+					int num1 = con.getPreStatement().executeUpdate();
+					System.out.println(NunOfRead + "冊目   user_listに対する返却処理完了");
+
+					//borrowed_bookに対しての処理
+					//返却日の取得
+					Calendar preReturnDate;
+					preReturnDate = Calendar.getInstance();
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+					String returnDate = sdf.format(preReturnDate.getTime());
+					//update 本を返した日
+					String updateSQLtoBorrowed_book = "update librarian.borrowed_book set return_date='" + returnDate
+							+ "' "
+							+ "where b_book_id='" + b_bookid + "'";
+					con.sendSQLtoDB(updateSQLtoBorrowed_book);
+					int num2 = con.getPreStatement().executeUpdate();
+					System.out.println(returnDate + "に返却しました");
+
+				} catch (SQLException e) {
+					System.out.println(e.getMessage());
 				}
-				NunOfRead++;
-				//update 読んだ本の冊数
-				String updateSQLtoUser_list = "update librarian.user_list set number_of_read='" + NunOfRead + "' "
-						+ "where user_id='" + con.getLoginUser_ID() + "'";
-				con.sendSQLtoDB(updateSQLtoUser_list);
-				int num1 = con.getPreStatement().executeUpdate();
-				System.out.println(NunOfRead + "冊目   user_listに対する返却処理完了");
+				con.connectionClose();
 
-				//borrowed_bookに対しての処理
-				//返却日の取得
-				Calendar preReturnDate;
-				preReturnDate = Calendar.getInstance();
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-				String returnDate = sdf.format(preReturnDate.getTime());
-				//update 本を返した日
-				String updateSQLtoBorrowed_book = "update librarian.borrowed_book set return_date='" + returnDate + "' "
-						+ "where b_book_id='" + b_bookid + "'";
-				con.sendSQLtoDB(updateSQLtoBorrowed_book);
-				int num2 = con.getPreStatement().executeUpdate();
-				System.out.println(returnDate + "に返却しました");
-
-			} catch (SQLException e) {
-				e.printStackTrace();
+				RunLibrarian.getCardPanel().remove(loginButtonAction.getReturnBookP());
+				loginButtonAction.setReturnBookP(new ReturnBookPanel());
+				RunLibrarian.getCardPanel().add(loginButtonAction.getReturnBookP(), "ReturnBookPanel");
+				RunLibrarian.getCardPanelLayout().show(RunLibrarian.getCardPanel(), "ReturnBookPanel");
+				con.selectBorrowBook();
 			}
-			con.connectionClose();
-
-			LBWindow.getCardPanel().remove(loginButtonAction.getReturnBookP());
-			loginButtonAction.setReturnBookP(new ReturnBookPanel());
-			LBWindow.getCardPanel().add(loginButtonAction.getReturnBookP(), "ReturnBookPanel");
-			LBWindow.getCardPanelLayout().show(LBWindow.getCardPanel(), "ReturnBookPanel");
-			con.selectBorrowBook();
 		}
-
 	}
 }
 
@@ -856,8 +908,7 @@ class freeWordSearchButtonAction extends AbstractButtonAction {
 		//入力された文字列の取得
 		String searchWord = FindBookPanel.getFreeWordSearchInputArea().getText();
 		if (Validate.blankCheck(searchWord) == 1000) {
-			System.out.println("何か入力するんだな");
-
+			Validate.outputErrorMessage(1000);
 		} else {
 			String selectSqlFindBook = "select book_id,book_title,book_author,"
 					+ "book_publication,book_genre,book_added_date,number_of_reviewer,number_of_star "
@@ -915,7 +966,7 @@ class freeWordSearchButtonAction extends AbstractButtonAction {
 
 				rs.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 
 			con.connectionClose();
@@ -985,7 +1036,7 @@ class allBookListDisplayButtonAction extends AbstractButtonAction {
 
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 		con.connectionClose();
@@ -1004,25 +1055,30 @@ class borrowBookButtonAction extends AbstractButtonAction {
 		int row;
 		Object bookid = null;
 		String bookTitle = null;
-
+		JTable table = null;
+		//ページ確認
 		if (LBPanel.getCardNum() == 1) {
-			row = FindBookPanel.getBookListDisplayTable().getSelectedRow();
-			//選択された行のbook_idを取得
-			bookid = FindBookPanel.getBookListDisplayTable().getValueAt(row, 0);
-			//選択された行のbook_titleを取得
-			bookTitle = (String) FindBookPanel.getBookListDisplayTable().getValueAt(row, 1);
+			table = FindBookPanel.getBookListDisplayTable();
 		} else if (LBPanel.getCardNum() == 2) {
-			row = WomanRecommendationPanel.getRecommendationDisplayTable().getSelectedRow();
-			//選択された行のbook_idを取得
-			bookid = WomanRecommendationPanel.getRecommendationDisplayTable().getValueAt(row, 0);
-			//選択された行のbook_titleを取得
-			bookTitle = (String) WomanRecommendationPanel.getRecommendationDisplayTable().getValueAt(row, 1);
+			table = WomanRecommendationPanel.getRecommendationDisplayTable();
 		}
+
+		row = table.getSelectedRow();
+		//選択チェック
+		if (row < 0) {
+			Validate.outputErrorMessage(1050);
+		} else {
+			//選択された行のbook_idを取得
+			bookid = table.getValueAt(row, 0);
+			//選択された行のbook_titleを取得
+			bookTitle = (String) table.getValueAt(row, 1);
+		}
+
 		System.out.println("bookid=" + bookid);
 		System.out.println("bookTitle=" + bookTitle);
-
+		//貸出状態チェック
 		if (Validate.rentalStatusCheck(bookid) == 1) {
-			System.out.println("貸出中です");
+			Validate.outputErrorMessage(2040);
 		} else if (Validate.rentalStatusCheck(bookid) == 0) {
 			DBConnection con = new DBConnection();
 			con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
@@ -1033,22 +1089,22 @@ class borrowBookButtonAction extends AbstractButtonAction {
 					+ bookid + "'";
 			con.sendSQLtoDB(selectSQLfrombookshelf);
 			ResultSet rs;
-			int NORental = 0;
+			int numberOfRental = 0;
 			try {
 				rs = con.getPreStatement().executeQuery();
 				while (rs.next()) {
-					NORental = rs.getInt(1);
+					numberOfRental = rs.getInt(1);
 				}
 
-				NORental++;
+				numberOfRental++;
 				//bookshelfのupdate 貸出状態、借りているユーザーID、レンタル数の変更
 				String updateSQLtobookshelf = "update librarian.bookshelf set rental_status=1, borrowed_now='"
-						+ con.getLoginUser_ID() + "',number_of_rental='" + NORental + "' where book_id='" + bookid
+						+ con.getLoginUser_ID() + "',number_of_rental='" + numberOfRental + "' where book_id='" + bookid
 						+ "'";
 				con.sendSQLtoDB(updateSQLtobookshelf);
 				int num = con.getPreStatement().executeUpdate();
 				System.out.println("貸出状態変更完了");
-				System.out.println("借りられた回数は" + NORental);
+				System.out.println("借りられた回数は" + numberOfRental);
 
 				//user_listに対する処理
 				//最後に借りた本の変更
@@ -1078,7 +1134,7 @@ class borrowBookButtonAction extends AbstractButtonAction {
 
 				rs.close();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 
 			con.connectionClose();
@@ -1102,7 +1158,7 @@ class openWriteReviewPanelButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		writeReviewP = new WriteReviewPanel();
-		LBWindow.getLibrarianContentPane().add(writeReviewP, BorderLayout.CENTER);
+		RunLibrarian.getLibrarianContentPane().add(writeReviewP, BorderLayout.CENTER);
 		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(false);
 	}
 }
@@ -1117,8 +1173,8 @@ class returnPreviousPanelButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.getLibrarianContentPane().remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
-		LBWindow.getCardPanel().setVisible(true);
+		RunLibrarian.getLibrarianContentPane().remove(OpenDisplayReviewPanelButton.getDisplayReviewP());
+		RunLibrarian.getCardPanel().setVisible(true);
 	}
 }
 
@@ -1133,7 +1189,7 @@ class postReviewButtonAction extends AbstractButtonAction {
 	@Override
 	public void buttonAction() {
 		String impressions = WriteReviewPanel.getReviewInputArea().getText();
-		//星評価と感想入力　両方しないとダメ
+		//星評価と感想入力　両方しないとダメ 文字数チェック
 		if (WriteReviewPanel.getStarRating() != 0 && Validate.blankCheck(impressions) == 0
 				&& Validate.wordCountCheck(impressions, 400) == 0) {
 			DBConnection con = new DBConnection();
@@ -1148,7 +1204,7 @@ class postReviewButtonAction extends AbstractButtonAction {
 			try {
 				int num = con.getPreStatement().executeUpdate();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 
 			System.out.println("レビューを投稿しました");
@@ -1195,12 +1251,17 @@ class postReviewButtonAction extends AbstractButtonAction {
 				System.out.println("評価更新完了");
 
 			} catch (SQLException e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
 			}
 
 			con.connectionClose();
 			WriteReviewPanel.setStarRating(0);
-
+		//文字数チェック
+		}else if(Validate.wordCountCheck(impressions, 400)==1010) {
+			Validate.outputErrorMessage(1010);
+		//空欄がある
+		}else {
+			Validate.outputErrorMessage(1000);
 		}
 	}
 }
@@ -1218,7 +1279,7 @@ class returnDisplayReviewPanelButtonAction extends AbstractButtonAction {
 
 	@Override
 	public void buttonAction() {
-		LBWindow.getLibrarianContentPane().remove(openWriteReviewPanelButtonAction.getWriteReviewP());
+		RunLibrarian.getLibrarianContentPane().remove(openWriteReviewPanelButtonAction.getWriteReviewP());
 		OpenDisplayReviewPanelButton.getDisplayReviewP().setVisible(true);
 	}
 }
@@ -1253,7 +1314,7 @@ class deleteUserButtonAction extends AbstractButtonAction {
 			con.sendSQLtoDB(dropUserSQL);
 			int num1 = con.getPreStatement().executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 		con.selectUser_listAtwlp();
@@ -1310,13 +1371,12 @@ class deleteBookButtonAction extends AbstractButtonAction {
 		String deleteBookSQL = "DELETE from librarian.bookshelf WHERE book_id=" + bookID;
 		DBConnection con = new DBConnection();
 		con.dbConnection(con.getLoginUser_ID(), con.getLoginUser_PW());
-		System.out.println("IDは" + con.getLoginUser_ID());
-		System.out.println("PWは" + con.getLoginUser_PW());
 		con.sendSQLtoDB(deleteBookSQL);
 		try {
 			int num = con.getPreStatement().executeUpdate();
+			System.out.println(bookID + "を削除しました。");
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 		con.selectBook_listAtwlp();
 

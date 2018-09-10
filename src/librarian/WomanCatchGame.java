@@ -23,7 +23,7 @@ public class WomanCatchGame extends JFrame {
 	private int womanHP = 10;
 	private int playerHP = 10;
 	//移動スピード(ms)
-	private int womanMoveSpeed = 700;
+	private int womanMoveSpeed = 750;
 	//攻撃頻度　
 	private int womanAttackFrequency = 3;
 
@@ -47,7 +47,8 @@ public class WomanCatchGame extends JFrame {
 
 
 	public static void main(String args[]) {
-		new WomanCatchGame();
+		WomanCatchGame game= new WomanCatchGame();
+		game.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
 	public  ImageIcon makeSmallIcon(String icon) {
@@ -70,8 +71,8 @@ public class WomanCatchGame extends JFrame {
 		setTitle("相手をしてあげよう");
 		setBounds(100, 100, 1400, 700);
 
-		//単独で実行する際はコメント解除
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		
 
 		JPanel p = new JPanel();
 

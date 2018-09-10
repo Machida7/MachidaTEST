@@ -15,7 +15,7 @@ public class DBConnection {
 	private Connection conn = null;
 	private PreparedStatement preStatement = null;
 
-	private  ResultSet rs = null;
+	private ResultSet rs = null;
 	private final String DB_DRIVER = "com.mysql.cj.jdbc.Driver";
 	private final String DB_URL = "jdbc:mysql://localhost:3306?"
 			+ "characterEncoding=UTF-8&serverTimezone=JST&useSSL=false"
@@ -24,7 +24,6 @@ public class DBConnection {
 	private final String administrator_PW = "iface-pc";
 	private static String loginUser_ID;
 	private static String loginUser_PW;
-
 
 	public void setLoginUser_ID(String user_ID) {
 		DBConnection.loginUser_ID = user_ID;
@@ -61,9 +60,9 @@ public class DBConnection {
 			conn = DriverManager.getConnection(DB_URL, ID, PW);
 		} catch (SQLException e) {
 			System.out.println(e.getMessage());
-			
+
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 	}
@@ -73,7 +72,7 @@ public class DBConnection {
 		try {
 			preStatement = conn.prepareStatement(_sqlStatement);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 
@@ -83,31 +82,30 @@ public class DBConnection {
 			preStatement.close();
 			conn.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 
 	//お姉さんの部屋において、表にユーザーリストを表示する
 	public void selectUser_listAtwlp() {
-	String selectUser_listSQL = "select user_number,user_name,user_id,user_pw,user_added_date,last_login_date from librarian.user_list";
-	sendSQLtoDB(selectUser_listSQL);
-	DefaultTableModel model = (DefaultTableModel) WomanRoomPanel.getAllUserListDisplayTable().getModel();
-	model.setRowCount(0);
-	ResultSet rs;
-	try {
-		rs = getPreStatement().executeQuery();
-		while (rs.next()) {
-			model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
-					rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
+		String selectUser_listSQL = "select user_number,user_name,user_id,user_pw,user_added_date,last_login_date from librarian.user_list";
+		sendSQLtoDB(selectUser_listSQL);
+		DefaultTableModel model = (DefaultTableModel) WomanRoomPanel.getAllUserListDisplayTable().getModel();
+		model.setRowCount(0);
+		ResultSet rs;
+		try {
+			rs = getPreStatement().executeQuery();
+			while (rs.next()) {
+				model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+						rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
+			}
+			rs.close();
+
+		} catch (SQLException e) {
+			System.out.println(e.getMessage());
 		}
-		rs.close();
-
-	} catch (SQLException e) {
-		e.printStackTrace();
-	}
 
 	}
-
 
 	//お姉さんの部屋において、表に本のリストを表示する
 	public void selectBook_listAtwlp() {
@@ -120,14 +118,14 @@ public class DBConnection {
 
 		try {
 			rs = getPreStatement().executeQuery();
-		while (rs.next()) {
-			model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
-					rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
-		}
-		rs.close();
+			while (rs.next()) {
+				model.addRow(new String[] { String.format("%05d", rs.getInt(1)),
+						rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5), rs.getString(6) });
+			}
+			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
-	}
+			System.out.println(e.getMessage());
+		}
 
 	}
 
@@ -149,7 +147,6 @@ public class DBConnection {
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-
 
 	}
 
@@ -193,12 +190,10 @@ public class DBConnection {
 
 			rs.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 		connectionClose();
 	}
 
-	}
-
-
+}
